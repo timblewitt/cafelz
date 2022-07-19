@@ -12,6 +12,7 @@ param stName string
 param stSku string
 param stKind string
 param location string
+param tableName string
 
 resource st 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: stName
@@ -27,8 +28,8 @@ resource tableservice 'Microsoft.Storage/storageAccounts/tableServices@2021-04-0
   parent: st
 }
 
-resource lzim 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-04-01' = {
-  name: 'lzim'
+resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-04-01' = {
+  name: tableName
   parent: tableservice
 }
 

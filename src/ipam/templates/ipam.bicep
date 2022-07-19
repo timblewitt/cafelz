@@ -24,6 +24,7 @@ module st './modules/st.bicep' = {
     stSku: 'Standard_GRS'
     stKind: 'StorageV2'
     location: regionName
+    tableName: 'ipam'
   }
 }
 
