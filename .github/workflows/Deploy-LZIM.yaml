@@ -1,0 +1,78 @@
+#
+# This workflow deploys the Landing Zone Identity Management (LZIM) Azure Function.
+#
+# Each new Azure landing zone is assigned a unique identifier for naming resources within that landing zone.
+# The format in this case is:
+#    zennnn (e.g. zp0197)
+# where e = environment 
+#    p = production
+#    t = test
+#    d = dev
+#    s = staging
+#    q = QA
+# and n is a unique number e.g. 0001.
+# 
+# The function can be called using the REST API and it returns a free (unallocated) identifier for the given environment.
+#
+
+name: Deploy-LZIM
+
+on:
+  push:
+    branches: [ none ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy-azurefunction:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository under $GITHUB_WORKSPACE, so job can access it
+        uses: actions/checkout@v2
+
+      - name: Log on to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+          
+      - name: Create Function App
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |           
+            $mgmtSubName = "mp0004"
+            $regionName = "uksouth"
+            $regionId = "uks"
+            $functionSourceFolder = './src/infra/lzim/function/*'
+            $functionZipPath = "./src/infra/lzim/lzim.zip"
+
+            $faName = "fa-$mgmtSubName-$regionId-lzim"
+            $rgLzimName = "rg-$mgmtSubName-$regionId-lzim"
+            $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
+
+            Write-Output "Generating function zip file"
+            Compress-Archive -Path $functionSourceFolder -DestinationPath $functionZipPath -Force
+            
+            Write-Output "Deploying Azure resources"
+            $deploymentName = Get-Date -Format yyyyMMddHHmmss
+            $deploymentName
+            New-AzDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile ./src/infra/lzim/lzim.bicep `
+                -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgLzimName $rgLzimName -rgMonitorName $rgMonitorName
+            Start-Sleep 60
+            
+            Write-Output "Publishing function to function app"
+            $faObj = Get-AzWebApp -Name $faName -ResourceGroupName $rgLzimName
+            Publish-AzWebApp -WebApp $faObj -ArchivePath $functionZipPath -Force
+            Start-Sleep 30
+            
+            Write-Output "Configuring app settings"
+            $saName = (Get-AzStorageAccount -ResourceGroupName $rgLzimName | Where-Object {$_.StorageAccountName -like 'st*lzim'}).StorageAccountName
+            $appSettingsOld = ($faObj.SiteConfig.AppSettings | ForEach-Object { $h = @{} } { $h[$_.Name] = $_.Value } { $h })
+            $appSettingsNew = @{lzimStorageAccount = $saName}
+            Set-AzWebApp -ResourceGroupName $rgLzimName -Name $faName -AppSettings ($appSettingsOld + $appSettingsNew)
+            Start-Sleep 10
+            Restart-AzWebApp -ResourceGroupName $rgLzimName -Name $faName
+
+            Write-Output "Assigning Contributor role for the function app to the storage account"
+            $saName = (Get-AzStorageAccount -ResourceGroupName $rgLzimName | Where-Object {$_.StorageAccountName -like 'st*lzim'}).StorageAccountName
+            New-AzRoleAssignment -ResourceGroupName $rgLzimName -ResourceName $saName -RoleDefinitionName 'Contributor' -ObjectId $faObj.Identity.PrincipalId -ResourceType 'Microsoft.Storage/storageAccounts'  
+          azPSVersion: latest 
