@@ -14,7 +14,7 @@ function Add-Ipam-Records {
     $faName = 'fa-mp0004-uks-ipam'
     $faRg = 'rg-mp0004-uks-ipam'     
     $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-    $faFunction = 'Add-Network-Address'
+    $faFunction = 'Add-IPAM-Range'
     $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
     $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
     $body = @{
