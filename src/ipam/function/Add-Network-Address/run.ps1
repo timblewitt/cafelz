@@ -56,7 +56,7 @@ for ($i = 0; $i -lt $nwNumber; $i++) {
     -rowKey ($rowKey) -property @{"NetworkAddress"="$nwAddress";"Environment"="$nwEnvironment";"Region"="$nwRegion";"Allocated"=$false;"Notes"="";"Subscription"="$null";"ResourceGroup"="$null";"VNetName"="$null"}
 }
 
-$results = Get-AzTableRow -table $saTable | select RowKey
+$results = Get-AzTableRow -table $saTable | select NetworkAddress
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{

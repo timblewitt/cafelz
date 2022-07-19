@@ -36,3 +36,17 @@ function Add-Ipam-Records {
 }
 
 Add-Ipam-Records -nwRange '10.160.0.0' -nwNumber 4 -nwSize 'Small' -nwEnvironment 'Prod' -nwRegion 'uksouth'
+
+
+#@("10.160.0.0",4,"Small","Prod","uksouth"),
+#@("10.161.0.0",4,"Medium","Prod","uksouth"),
+#@("10.162.0.0",4,"Large","Prod","uksouth"),
+#@("10.170.0.0",4,"Small","Nonprod","uksouth"),
+#@("10.171.0.0",4,"Medium","Nonprod","uksouth"),
+#@("10.172.0.0",4,"Large","Nonprod","uksouth"),
+#@("10.180.0.0",4,"Small","Prod","ukwest"),
+#@("10.181.0.0",4,"Medium","Prod","ukwest"),
+#@("10.182.0.0",4,"Large","Prod","ukwest"),
+#@("10.190.0.0",4,"Small","Nonprod","ukwest"),
+#@("10.191.0.0",4,"Medium","Nonprod","ukwest"),
+#@("10.192.0.0",4,"Large","Nonprod","ukwest")
