@@ -37,7 +37,7 @@ jobs:
             $templateSourceFile = './src/ipam/templates/ipam.bicep'
 
             $faName = "fa-$mgmtSubName-$regionId-ipam"
-            $rgIipamName = "rg-$mgmtSubName-$regionId-ipam"
+            $rgIpamName = "rg-$mgmtSubName-$regionId-ipam"
             $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"
