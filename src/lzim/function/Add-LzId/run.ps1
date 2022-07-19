@@ -18,22 +18,22 @@ if (-not $lzNumber) {
 }
 
 # Add LZ IDs to Azure storage table (storage account name is an application setting configured during function deployment)
-$lzimStorageAccount = $env:lzimStorageAccount
-$lzimTableName = 'lzim'
-$lzimSaCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $lzimStorageAccount}).Context
-$lzimTable = (Get-AzStorageTable –Name $lzimTableName –Context $lzimSaCtx).CloudTable
-$lzimPartKey = "LZ"
+$storageAccount = $env:lzimStorageAccount
+$saTableName = 'lzim'
+$saCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $storageAccount}).Context
+$saTable = (Get-AzStorageTable –Name $saTableName –Context $saCtx).CloudTable
+$tablePartKey = "LZIM"
 $lzPrefix = 'z' + $lzEnv.ToLower()[0]
 
 for ($row = 1 ; $row -le $lzNumber ; $row++){    
     $rowKey = $lzPrefix + “{0:d4}” -f $row
     Add-AzTableRow `
-    -table $lzimTable `
-    -partitionKey $lzimPartKey `
+    -table $saTable `
+    -partitionKey $tablePartKey `
     -rowKey ($rowKey) -property @{"Environment"="$lzEnv";"Allocated"=$false;"Notes"=""}
 }
 
-$results = Get-AzTableRow -table $lzimTable | select RowKey
+$results = Get-AzTableRow -table $saTable | select RowKey
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
