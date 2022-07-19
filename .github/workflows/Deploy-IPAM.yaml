@@ -1,0 +1,69 @@
+#
+# This workflow deploys the IP Address Management (IPAM) Azure Function.
+#
+# 
+# The function can be called using the REST API and it returns a free (unallocated) network address for the given environment and location.
+#
+
+name: Deploy-IPAM
+
+on:
+  push:
+    branches: [ none ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy-azurefunction:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository under $GITHUB_WORKSPACE, so job can access it
+        uses: actions/checkout@v2
+
+      - name: Log on to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+          
+      - name: Create Function App
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |           
+            $mgmtSubName = "mp0004"
+            $regionName = "uksouth"
+            $regionId = "uks"
+            $functionSourceFolder = './src/ipam/function/*'
+            $functionZipPath = './src/ipam/ipam.zip'
+            $templateSourceFile = './src/ipam/templates/ipam.bicep'
+
+            $faName = "fa-$mgmtSubName-$regionId-ipam"
+            $rgIipamName = "rg-$mgmtSubName-$regionId-ipam"
+            $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
+
+            Write-Output "Generating function zip file"
+            Compress-Archive -Path $functionSourceFolder -DestinationPath $functionZipPath -Force
+            
+            Write-Output "Deploying Azure resources"
+            $deploymentName = Get-Date -Format yyyyMMddHHmmss
+            $deploymentName
+            New-AzDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile `
+                -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgIpamName $rgIpamName -rgMonitorName $rgMonitorName
+            Start-Sleep 60
+            
+            Write-Output "Publishing function to function app"
+            $faObj = Get-AzWebApp -Name $faName -ResourceGroupName $rgIpamName
+            Publish-AzWebApp -WebApp $faObj -ArchivePath $functionZipPath -Force
+            Start-Sleep 30
+            
+            Write-Output "Configuring app settings"
+            $saName = (Get-AzStorageAccount -ResourceGroupName $rgIpamName | Where-Object {$_.StorageAccountName -like 'st*ipam'}).StorageAccountName
+            $appSettingsOld = ($faObj.SiteConfig.AppSettings | ForEach-Object { $h = @{} } { $h[$_.Name] = $_.Value } { $h })
+            $appSettingsNew = @{ipamStorageAccount = $saName}
+            Set-AzWebApp -ResourceGroupName $rgIpamName -Name $faName -AppSettings ($appSettingsOld + $appSettingsNew)
+            Start-Sleep 10
+            Restart-AzWebApp -ResourceGroupName $rgIpamName -Name $faName
+
+            Write-Output "Assigning Contributor role for the function app to the storage account"
+            $saName = (Get-AzStorageAccount -ResourceGroupName $rgIpamName | Where-Object {$_.StorageAccountName -like 'st*ipam'}).StorageAccountName
+            New-AzRoleAssignment -ResourceGroupName $rgIpamName -ResourceName $saName -RoleDefinitionName 'Contributor' -ObjectId $faObj.Identity.PrincipalId -ResourceType 'Microsoft.Storage/storageAccounts' -ErrorAction Continue
+          azPSVersion: latest 
