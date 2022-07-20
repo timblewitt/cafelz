@@ -8,25 +8,35 @@ Write-Host "PowerShell HTTP trigger function processed a request."
 
 # Interact with query parameters or the body of the request.
 # Get the environment (e.g. production/test/dev/staging/QA) for the requested id and any associated notes that should be recorded.
-$lzEnv = $Request.Query.Environment
-if (-not $lzEnv) {
-    $lzEnv = $Request.Body.InputObject.Environment
-}$lzNotes = $Request.Query.Notes
-if (-not $lzNotes) {
-    $lzNotes = $Request.Body.InputObject.Notes
+$nwSize = $Request.Query.NwSize
+if (-not $nwSize) {
+    $nwSize = $Request.Body.InputObject.NwSize
+}
+$nwEnvironment = $Request.Query.NwEnvironment
+if (-not $nwEnvironment) {
+    $nwEnvironment = $Request.Body.InputObject.NwEnvironment
+}
+$nwRegion = $Request.Query.NwRegion
+if (-not $nwRegion) {
+    $nwRegion = $Request.Body.InputObject.NwRegion
+}
+$nwNotes = $Request.Query.NwNotes
+if (-not $nwNotes) {
+    $nwNotes = $Request.Body.InputObject.NwNotes
 }
 
 # Get next free (Allocated = false) LZ ID in Azure Storage tale for given environment.
 # The storage account name is an application setting configured during function deployment.
-$lzimStorageAccount = $env:lzimStorageAccount
-$lzimTableName = 'lzim'
-$lzimSaCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $lzimStorageAccount}).Context
-$lzimTable = (Get-AzStorageTable –Name $lzimTableName –Context $lzimSaCtx).CloudTable
-$freeLzId = Get-AzTableRow -table $lzimTable | where {($_.Environment -eq $lzEnv) -and ($_.Allocated -eq $false)} | select -First 1 
-$freeLzId.Allocated = $true
-$freeLzId.Notes = $lzNotes
-$freeLzId | Update-AzTableRow -Table $lzimTable 
-$results = $freeLzId.RowKey
+$storageAccount = $env:ipamStorageAccount
+$saTableName = 'ipam'
+$saCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $storageAccount}).Context
+$saTable = (Get-AzStorageTable –Name $saTableName –Context $saCtx).CloudTable
+
+$freeIpam = Get-AzTableRow -table $saTable | where {($_.Environment -eq $nwEnvironment) -and ($_.Region -eq $nwRegion) -and ($_.Environment -eq $nwEnvironment) -and ($_.Allocated -eq $false)} | select -First 1 
+$freeIpam.Allocated = $true
+$freeIpam.Notes = $nwNotes
+$freeIpam | Update-AzTableRow -Table $saTable 
+$results = $freeIpam.RowKey
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
