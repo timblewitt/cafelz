@@ -1,22 +1,26 @@
 #
-# This script calls the LZIM function app using the REST API to retrieve a free
-# Azure Landing Zone identifier for a given environment.
+##### This script calls the LZIM function app using the REST API to retrieve a free
+##### Azure Landing Zone identifier for a given environment.
 #
-function Get-Lzim-Record {
+function Get-Ipam-Record {
     param (
         $Environment,
+        $Region,
+        $NetworkSize,
         $Notes
     )                
-    $faName = 'fa-mp0004-uks-lzim'
-    $faRg = 'rg-mp0004-uks-lzim'     
+    $faName = 'fa-mp0004-uks-ipam'
+    $faRg = 'rg-mp0004-uks-ipam'     
     $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-    $faFunction = 'Get-Lzid'
+    $faFunction = 'Get-IPAM-Address'
     $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
     $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
     $body = @{
         'InputObject' = @{
-            'Environment' = $Environment
-            'Notes' = $Notes
+            'NwEnvironment' = $Environment
+            'NwRegion' = $Region
+            'NwSize' = $NetworkSize
+            'NwNotes' = $Notes
         }
     } | ConvertTo-Json 
     $params = @{
@@ -25,8 +29,7 @@ function Get-Lzim-Record {
         'ContentType' = 'application/json'
         'Body'        = $body
     }
-    $elzId = Invoke-RestMethod @params 
-    return $elzId 
+    Invoke-RestMethod @params 
 }
 
-Get-Lzim-Record -Environment 'QA' -Notes 'Test addition'
+Get-Ipam-Record -Environment 'Prod' -Region 'uksouth' -NetworkSize 'Medium' -Notes 'Test addition'
