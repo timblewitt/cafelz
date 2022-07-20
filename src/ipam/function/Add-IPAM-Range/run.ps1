@@ -10,23 +10,23 @@ Write-Host "PowerShell HTTP trigger function processed a request."
 ######## Get the environment (e.g. production/test/dev/staging/QA) and the number of ids to add to the table for that environment
 $nwRange = $Request.Query.NwRange
 if (-not $nwRange) {
-    $nwRange = $Request.Body.NwRange
+    $nwRange = $Request.Body.InputObject.NwRange
 }
 $nwNumber = $Request.Query.NwNumber
 if (-not $nwNumber) {
-    $nwNumber = $Request.Body.NwNumber
+    $nwNumber = $Request.Body.InputObject.NwNumber
 }
 $nwSize = $Request.Query.NwSize
 if (-not $nwSize) {
-    $nwSize = $Request.Body.NwSize
+    $nwSize = $Request.Body.InputObject.NwSize
 }
 $nwEnvironment = $Request.Query.NwEnvironment
 if (-not $nwEnvironment) {
-    $nwEnvironment = $Request.Body.NwEnvironment
+    $nwEnvironment = $Request.Body.InputObject.NwEnvironment
 }
 $nwRegion = $Request.Query.NwRegion
 if (-not $nwRegion) {
-    $nwRegion = $Request.Body.NwRegion
+    $nwRegion = $Request.Body.InputObject.NwRegion
 }
 
 # Add LZ IDs to Azure storage table (storage account name is an application setting configured during function deployment)
@@ -45,18 +45,23 @@ switch ($nwSize) {
 $a,$b,$c,$d = $nwRange.Split(".")
 for ($i = 0; $i -lt $nwNumber; $i++) {
     $rowKey = $(New-Guid).Guid
-    $nwAddress="$a.$b.$([int]$c+($count * $i)).$d" + $suffix
-    $nwEnv = $nwEnvironment
-    $nwRegion = $nwRegion
-    Write-Output "Adding network $nwAddress in the $nwEnv environment"
-
-    Add-AzTableRow `
-    -table $saTable `
-    -partitionKey $tablePartKey `
-    -rowKey ($rowKey) -property @{"NetworkAddress"="$nwAddress";"Environment"="$nwEnvironment";"Region"="$nwRegion";"Allocated"=$false;"Notes"="";"Subscription"="$null";"ResourceGroup"="$null";"VNetName"="$null"}
+    $nwPrefix = "$a.$b.$([int]$c+($count * $i)).$d"
+    $nwAddress = $nwPrefix + $suffix
+    Write-Output "Adding network $nwAddress in the $nwEnvironment environment"
+    $tableRow = Get-AzTableRow -Table $saTable | where {$_.NetworkAddress -eq $nwAddress}
+    If ($tableRow -eq $null) {
+        Add-AzTableRow -Table $saTable -PartitionKey $tablePartKey -RowKey ($rowKey) -Property @{"NetworkAddress"="$nwAddress";"Environment"="$nwEnvironment";"Region"="$nwRegion";"Allocated"=$false;"Notes"="";"Subscription"="$null";"ResourceGroup"="$null";"VNetName"="$null"}
+    }
+#    Else {
+#        If ($tableRow.Allocated -eq $false) {
+#            $tableRow.Environment = $nwEnvironment
+#            $tableRow.Region = $nwRegion
+#            $tableRow | Update-AzTableRow -Table $saTable
+#        } 
+#    }
 }
 
-$results = Get-AzTableRow -table $saTable | select NetworkAddress
+$results = Get-AzTableRow -table $saTable | select NetworkAddress, Region, Environment, Allocated | sort NetworkAddress
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
