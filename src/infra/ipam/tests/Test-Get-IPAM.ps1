@@ -32,4 +32,4 @@ function Get-Ipam-Record {
     Invoke-RestMethod @params
 }
 
-Get-Ipam-Record -Environment 'Nonprod' -Region 'ukwest' -NetworkSize 'Medium' -Notes 'Test addition'
+Get-Ipam-Record -Environment 'Nonprod' -Region 'uksouth' -NetworkSize 'Medium' -Notes 'Test addition'
