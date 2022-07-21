@@ -1,6 +1,6 @@
 # Get-LZID
 #
-# This function returns a free network address range for an Azure virtual network (VNet)
+# This function returns a free Azure Landing Zone identifier for use in resource naming
 #
 using namespace System.Net
 
@@ -27,8 +27,8 @@ $lzimTableName = 'lzim'
 $lzimSaCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $lzimStorageAccount}).Context
 $lzimTable = (Get-AzStorageTable –Name $lzimTableName –Context $lzimSaCtx).CloudTable
 
-If ($freeIpam -ne $null) {
-    $freeLzId = Get-AzTableRow -table $lzimTable | where {($_.Environment -eq $lzEnv) -and ($_.Allocated -eq $false)} | select -First 1 
+$freeLzId = Get-AzTableRow -table $lzimTable | where {($_.Environment -eq $lzEnv) -and ($_.Allocated -eq $false)} | select -First 1 
+If ($freeLzId -ne $null) {
     $freeLzId.Allocated = $true
     $freeLzId.Notes = $lzNotes
     $freeLzId | Update-AzTableRow -Table $lzimTable 

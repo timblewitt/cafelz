@@ -1,6 +1,6 @@
 {
-    "azureFunctions.projectSubpath": "src\\ipam\\function",
-    "azureFunctions.deploySubpath": "src\\ipam\\function",
+    "azureFunctions.projectSubpath": "src\\infra\\ipam\\function",
+    "azureFunctions.deploySubpath": "src\\infra\\ipam\\function",
     "azureFunctions.projectLanguage": "PowerShell",
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen"

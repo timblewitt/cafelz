@@ -1,3 +1,7 @@
+# Add-LZID
+#
+# This function adds a range of Azure Landing Zone identifiers
+#
 using namespace System.Net
 
 # Input bindings are passed in via param block.
@@ -26,13 +30,14 @@ $tablePartKey = "LZIM"
 $lzPrefix = 'z' + $lzEnv.ToLower()[0]
 
 for ($row = 1 ; $row -le $lzNumber ; $row++){    
-    $rowKey = $lzPrefix + “{0:d4}” -f $row
+    $rowKey = $lzPrefix + “{0:d4}” -f $row  # e.g. zp0318
     Add-AzTableRow `
     -table $saTable `
     -partitionKey $tablePartKey `
     -rowKey ($rowKey) -property @{"Environment"="$lzEnv";"Allocated"=$false;"Notes"=""}
 }
 
+# Report all records
 $results = Get-AzTableRow -table $saTable | select RowKey
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.

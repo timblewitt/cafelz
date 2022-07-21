@@ -42,9 +42,9 @@ jobs:
             $mgmtSubName = "mp0004"
             $regionName = "uksouth"
             $regionId = "uks"
-            $functionSourceFolder = './src/lzim/function/*'
-            $functionZipPath = './src/lzim/lzim.zip'
-            $templateSourceFile = './src/lzim/templates/lzim.bicep'
+            $functionSourceFolder = './src/infra/lzim/function/*'
+            $functionZipPath = './src/infra/lzim/lzim.zip'
+            $templateSourceFile = './src/infra/lzim/templates/lzim.bicep'
 
             $faName = "fa-$mgmtSubName-$regionId-lzim"
             $rgLzimName = "rg-$mgmtSubName-$regionId-lzim"

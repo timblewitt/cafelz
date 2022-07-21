@@ -32,9 +32,9 @@ jobs:
             $mgmtSubName = "mp0004"
             $regionName = "uksouth"
             $regionId = "uks"
-            $functionSourceFolder = './src/ipam/function/*'
-            $functionZipPath = './src/ipam/ipam.zip'
-            $templateSourceFile = './src/ipam/templates/ipam.bicep'
+            $functionSourceFolder = './src/infra/ipam/function/*'
+            $functionZipPath = './src/infra/ipam/ipam.zip'
+            $templateSourceFile = './src/infra/ipam/templates/ipam.bicep'
 
             $faName = "fa-$mgmtSubName-$regionId-ipam"
             $rgIpamName = "rg-$mgmtSubName-$regionId-ipam"
