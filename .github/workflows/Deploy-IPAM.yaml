@@ -29,6 +29,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |           
+            $nwSubName = "np0004" 
             $mgmtSubName = "mp0004"
             $regionName = "uksouth"
             $regionId = "uks"
@@ -36,8 +37,8 @@ jobs:
             $functionZipPath = './src/infra/ipam/ipam.zip'
             $templateSourceFile = './src/infra/ipam/templates/ipam.bicep'
 
-            $faName = "fa-$mgmtSubName-$regionId-ipam"
-            $rgIpamName = "rg-$mgmtSubName-$regionId-ipam"
+            $faName = "fa-$nwSubName-$regionId-ipam"
+            $rgIpamName = "rg-$nwSubName-$regionId-ipam"
             $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"

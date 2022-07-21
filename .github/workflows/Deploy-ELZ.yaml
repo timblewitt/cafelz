@@ -1,0 +1,277 @@
+# This workflow deploys Enterprise Landing Zone resources.
+
+name: Deploy-ELZ
+
+on:
+  push:
+    branches: [ none ]
+  workflow_dispatch:
+      inputs:
+        regionname:
+          type: choice
+          description: 'Azure region for deployment of resources'
+          required: true
+          default: 'uksouth'
+          options:
+            - "uksouth"
+            - "ukwest"
+        envname:
+          type: choice
+          description: 'Environment '
+          required: true
+          default: 'Prod'
+          options:
+            - "Prod"
+            - "QA"
+            - "Staging"
+            - "Dev"
+            - "Test"
+        networksize:
+          type: choice
+          description: 'Virtual network (VNet) size - S/M/L (if addressrange = auto)'
+          required: true
+          default: 'Small'
+          options:
+            - "Small"
+            - "Medium"
+            - "Large"
+        elzsubname:
+          type: string
+          description: 'Landing zone subscription name (auto for automatically generated)'
+          required: true
+          default: 'auto'
+        addressrange:
+          type: string
+          description: 'Virtual network address range (auto for IPAM)'
+          required: true
+          default: 'auto'
+
+jobs:
+  deploy-elz:
+    runs-on: windows-latest #self-hosted
+    steps:
+      - name: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        uses: actions/checkout@v2
+      
+      - name: Log on to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS}}
+          enable-AzPSSession: true
+          
+      - name: Deploy ELZ 
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            #
+            # Get supplied parameters
+            #
+            $elzRegionName = '${{ github.event.inputs.regionname }}'
+            $elzEnvName = '${{ github.event.inputs.envname }}'
+            $elzVnetSize  = '${{ github.event.inputs.networksize }}' 
+            $elzSubName = '${{ github.event.inputs.elzsubname }}'
+            $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
+
+            # 
+            # Generate LZIM resource names 
+            #
+            $lzimSubName = 'mp0004'   # Name/id of management subscription
+            $lzimRegionId = 'uks'     # Region identifier used in naming central network resources
+            $faLzimName = "fa-$lzimSubName-$lzimRegionId-lzim"
+            $faLzimRg = "rg-$lzimSubName-$lzimRegionId-lzim"
+
+            # 
+            # Generate IPAM resource names 
+            #
+            $ipamSubName = 'np0004'   # Name/id of connectivity (network) subscription
+            $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
+            $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
+            $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
+                        
+            #
+            # If subscription name is 'auto', dynamically assign identifier
+            #
+            If ($elzSubName -eq 'auto') {
+                Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
+                $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id
+                $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/Get-LZIM-Id?'
+                Write-Host "URI: " $uri
+                Write-Host "Environment: " $elzEnvName
+                $body = @{
+                  'InputObject' = @{
+                    'Environment' = $elzEnvName
+                    'Notes' = $Notes
+                    }
+                } | ConvertTo-Json
+                Write-Host "Body: " $body
+                $params = @{
+                  'Uri'         = $uri
+                  'Method'      = 'POST'
+                  'ContentType' = 'application/json'
+                  'Body'        = $Body
+                }
+                Write-Host "Calling LZIM function to request allocated Landing Zone identifier"
+                $elzId = Invoke-RestMethod @params -Verbose    
+                Write-Host "Landing Zone identifier returned from LZIM: " $elzId
+              }
+              Else {
+                Write-Host "Failed to assign Landing Zone identifier"
+                $elzId = $null
+              }
+            }
+
+            #
+            # Calculate the network suffix for S/M/L ranges for IPAM request
+            # and check that manually supplied range is valid for S/M/L suffixes
+            #
+            If ($elzVnetAddressRange -eq 'auto') {
+              $networkSuffix = '23'  # Small network by default
+              if ($elzVnetSize -eq 'Medium') {
+                $networkSuffix = '22'
+              }
+              if ($elzVnetSize -eq 'Large') {
+                $networkSuffix = '21'
+              }
+            }  
+            Else {
+              $networkSuffix = $elzVnetAddressRange.Split("/")[1]
+              If ($networkSuffix -notin (21,22,23)) {
+                Write-Host "Supplied network suffix must be 21, 22 or 23"
+              }
+            }
+
+            # 
+            # Generate short region identifier for resource naming
+            #
+            switch ($elzRegionName) {
+              "uksouth" {$elzRegionId = 'uks'}
+              "ukwest" {$elzRegionId = 'ukw'}
+            }
+
+            #
+            # Set the subscription name and run commands in the context of that subscription
+            # 
+            $subName = $elzSubName
+            $subName = 'Azure Landing Zone'  # Temporary for testing 
+            #$subName = 'CBPVisual Studio Enterprise'  # Temporary for testing 
+            $subId = (Set-AzContext -SubscriptionName $subName).Subscription.Id
+            $subScope = '/subscriptions/' + $subId
+
+            #
+            # Generate resource group names based on subscription and region identifiers
+            #
+            $elzMonitorRg = "rg-$elzSubName-$elzRegionId-monitor"
+            $elzBackupRg = "rg-$elzSubName-$elzRegionId-backup"
+            $elzSecurityRg = "rg-$elzSubName-$elzRegionId-security"
+           
+            # 
+            # Generate networking resource names based on subscription and region identifiers
+            #
+            $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
+            $elzVnetRg = "rg-$elzSubName-$elzRegionId-network"
+            
+            # 
+            # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
+            #
+            If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzVnetRg -ErrorAction SilentlyContinue) -eq $null) {
+              Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
+              If ($elzVnetAddressRange -eq 'auto') {  
+                Write-Host "IP address range will be allocated automatically by IPAM"
+                $faId = (Get-AzWebApp -Name $faIpamName -ResourceGroupName $faIpamRg).Id
+                $registerFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/RegisterAddressSpace" -Action listkeys -Force).default
+                $uriRegister = 'https://' + $faIpamName + '.azurewebsites.net/api/RegisterAddressSpace?code=' + $registerFunctionKey
+                Write-Host "URI: " $uriRegister
+                Write-Host "NetworkSuffix: " $networkSuffix
+                If ($elzEnvName -ne 'Prod') {
+                  $nwEnvironment = 'Nonprod'
+                }
+                Else {
+                  $nwEnvironment = 'Prod'
+                }
+                Write-Host "Environment: " $elzEnvName
+                $body = @{
+                  'InputObject' = @{
+                    'ResourceGroup' = $elzVnetRg
+                    'VirtualNetworkName' = $elzVnetName
+                    'NetworkSuffix' = $networkSuffix
+                    'NwEnvironment' = $nwEnvironment
+                    'NwRegion' = $elzRegionName
+                    }
+                } | ConvertTo-Json
+                Write-Host "Body: " $body
+                $params = @{
+                  'Uri'         = $uriRegister
+                  'Method'      = 'POST'
+                  'ContentType' = 'application/json'
+                  'Body'        = $Body
+                }
+                Write-Host "Calling IPAM function to request address range"
+                $Result = Invoke-RestMethod @params -Verbose      
+                $elzVnetAddress = $Result.NetworkAddress
+                Write-Host "Address range returned from IPAM: " $elzVnetAddress
+              }
+              Else {
+                Write-Host "IP address range will be allocated from supplied parameter " $elzVnetAddressRange
+                $elzVnetAddress = $elzVnetAddressRange
+              }
+            }
+            Else {
+              Write-Host "VNet $elzVnetName already exists in subscription $subName"
+              $vnet = Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzVnetRg
+              $elzVnetAddress = $vnet.AddressSpace.AddressPrefixes[0]
+              Write-Host "Address range will be identified as the first already allocated range"
+            }
+
+            #
+            # Calculate the subnet address space ranges from the supplied VNet address range
+            #
+            $vnetOctet1 = $elzVnetAddress.Split(".")[0]
+            $vnetOctet2 = $elzVnetAddress.Split(".")[1]
+            $vnetOctet3 = $elzVnetAddress.Split(".")[2]
+            if ($elzVnetSize -eq 'Small') {
+              $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/25"
+              $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".128/25"
+              $snetDb = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".0/25"
+              $snetMgt = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".128/25"
+            }
+            else {
+              $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/24"
+              $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".0/24"
+              $snetDb = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 2).ToString() + ".0/24"
+              $snetMgt = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 3).ToString() + ".0/24"
+            }
+
+            #
+            # Deploy ELZ resources from template
+            #
+            Write-Host "Deploying landing zone resources"
+            $deploymentName = Get-Date -Format yyyyMMddHHmmss
+            New-AzDeployment -Name $deploymentName -Location $elzRegionName -Verbose -TemplateFile ./src/elz/templates/elz.bicep `
+              -elzSubName $elzSubName `
+              -elzRegionId $elzRegionId `
+              -elzRegionName $elzRegionName `
+              -elzMonitorRg $elzMonitorRg `
+              -elzBackupRg $elzBackupRg `
+              -elzSecurityRg $elzSecurityRg `
+              -elzNetworkRg $elzNetworkRg `
+              -elzVnetName $elzVnetName `
+              -elzVnetAddress $elzVnetAddress `
+              -snetWeb $snetWeb `
+              -snetApp $snetApp `
+              -snetDb $snetDb `
+              -snetMgt $snetMgt
+
+            #
+            # Update the IPAM storage table to reflect newly created VNet for dynamically assigned address ranges
+            #
+#            If ($elzVnetAddressRange -eq 'auto') {  
+#              Write-Host "Updating IPAM storage table"
+#              $updateFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/UpdateAddressSpace" -Action listkeys -Force).default
+#              $uriUpdate = 'https://' + $faIpamName + '.azurewebsites.net/api/UpdateAddressSpace?code=' + $UpdateFunctionKey
+#              $params = @{
+#                'Uri'         = $uriUpdate
+#                'Method'      = 'GET'
+#              }
+#              $Result = Invoke-RestMethod @params
+#            }
+          azPSVersion: latest 
