@@ -10,7 +10,7 @@ function Get-Lzim-Record {
     $faName = 'fa-mp0004-uks-lzim'
     $faRg = 'rg-mp0004-uks-lzim'     
     $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-    $faFunction = 'Get-Lzid'
+    $faFunction = 'Get-LZIM-Id'
     $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
     $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
     $body = @{
