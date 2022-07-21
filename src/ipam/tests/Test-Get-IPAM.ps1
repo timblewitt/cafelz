@@ -29,7 +29,7 @@ function Get-Ipam-Record {
         'ContentType' = 'application/json'
         'Body'        = $body
     }
-    Invoke-RestMethod @params 
+    Invoke-RestMethod @params
 }
 
-Get-Ipam-Record -Environment 'Prod' -Region 'uksouth' -NetworkSize 'Medium' -Notes 'Test addition'
+Get-Ipam-Record -Environment 'Nonprod' -Region 'ukwest' -NetworkSize 'Medium' -Notes 'Test addition'

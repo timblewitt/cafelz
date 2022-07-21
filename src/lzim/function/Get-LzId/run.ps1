@@ -1,3 +1,7 @@
+# Get-LZID
+#
+# This function returns a free network address range for an Azure virtual network (VNet)
+#
 using namespace System.Net
 
 # Input bindings are passed in via param block.
@@ -22,11 +26,18 @@ $lzimStorageAccount = $env:lzimStorageAccount
 $lzimTableName = 'lzim'
 $lzimSaCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $lzimStorageAccount}).Context
 $lzimTable = (Get-AzStorageTable –Name $lzimTableName –Context $lzimSaCtx).CloudTable
-$freeLzId = Get-AzTableRow -table $lzimTable | where {($_.Environment -eq $lzEnv) -and ($_.Allocated -eq $false)} | select -First 1 
-$freeLzId.Allocated = $true
-$freeLzId.Notes = $lzNotes
-$freeLzId | Update-AzTableRow -Table $lzimTable 
-$results = $freeLzId.RowKey
+
+If ($freeIpam -ne $null) {
+    $freeLzId = Get-AzTableRow -table $lzimTable | where {($_.Environment -eq $lzEnv) -and ($_.Allocated -eq $false)} | select -First 1 
+    $freeLzId.Allocated = $true
+    $freeLzId.Notes = $lzNotes
+    $freeLzId | Update-AzTableRow -Table $lzimTable 
+    $results = $freeLzId.RowKey
+}
+Else {
+    $results = "LZIM ERROR: No free identifiers"
+    Write-Host $results
+}
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
 Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{

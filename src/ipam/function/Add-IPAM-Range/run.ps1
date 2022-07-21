@@ -1,3 +1,7 @@
+# Add-IPAM-Range
+#
+# This function adds a range of network addresses for assignment to an Azure virtual network (VNet)
+#
 using namespace System.Net
 
 # Input bindings are passed in via param block.
@@ -7,7 +11,6 @@ param($Request, $TriggerMetadata)
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 # Interact with query parameters or the body of the request.
-######## Get the environment (e.g. production/test/dev/staging/QA) and the number of ids to add to the table for that environment
 $nwRange = $Request.Query.NwRange
 if (-not $nwRange) {
     $nwRange = $Request.Body.InputObject.NwRange
@@ -29,7 +32,7 @@ if (-not $nwRegion) {
     $nwRegion = $Request.Body.InputObject.NwRegion
 }
 
-# Add LZ IDs to Azure storage table (storage account name is an application setting configured during function deployment)
+# Add records to an Azure storage table (storage account name is an application setting configured during function deployment)
 $storageAccount = $env:ipamStorageAccount
 $saTableName = 'ipam'
 $saCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $storageAccount}).Context
@@ -61,6 +64,7 @@ for ($i = 0; $i -lt $nwNumber; $i++) {
 #    }
 }
 
+# Report all records
 $results = Get-AzTableRow -table $saTable | select NetworkAddress, Region, Environment, Allocated | sort NetworkAddress
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
