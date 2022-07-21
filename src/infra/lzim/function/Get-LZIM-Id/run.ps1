@@ -1,4 +1,4 @@
-# Get-LZID
+# Get-LZIM-Id
 #
 # This function returns a free Azure Landing Zone identifier for use in resource naming
 #

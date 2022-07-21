@@ -1,4 +1,4 @@
-# Add-LZID
+# Add-LZIM-Id
 #
 # This function adds a range of Azure Landing Zone identifiers
 #
