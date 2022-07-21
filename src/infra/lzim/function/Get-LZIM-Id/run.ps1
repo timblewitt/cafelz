@@ -35,7 +35,7 @@ If ($freeLzId -ne $null) {
     $results = $freeLzId.RowKey
 }
 Else {
-    $results = "LZIM ERROR: No free identifiers"
+    $results = "LZIM ERROR: No free identifiers for the $nwEnvironment environment"
     Write-Host $results
 }
 

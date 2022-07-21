@@ -29,4 +29,4 @@ function Get-Lzim-Record {
     return $elzId 
 }
 
-Get-Lzim-Record -Environment 'QA' -Notes 'Test addition'
+Get-Lzim-Record -Environment 'Dev' -Notes 'Test addition'

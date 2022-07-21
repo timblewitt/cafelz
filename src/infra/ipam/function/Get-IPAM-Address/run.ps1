@@ -49,7 +49,7 @@ If ($freeIpam -ne $null) {
     $results = $freeIpam.NetworkAddress 
 }
 Else {
-    $results = "IPAM ERROR: No free network addresses"
+    $results = "IPAM ERROR: No free network addresses for the $nwEnvironment environment in $nwRegion with a $nwSize network"
     Write-Host $results
 }
 
