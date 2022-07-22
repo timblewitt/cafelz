@@ -72,6 +72,8 @@ jobs:
             $elzSubName = '${{ github.event.inputs.elzsubname }}'
             $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
 
+            Write-Host "TIMB: " $elzEnvName
+
             # 
             # Generate LZIM resource names 
             #
