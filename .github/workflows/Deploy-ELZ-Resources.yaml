@@ -177,26 +177,25 @@ jobs:
             # 
             # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
             #
-            If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg -ErrorAction SilentlyContinue) -eq $null) {
-              Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
-              If ($elzVnetAddressRange -eq 'auto') {  
-                Write-Host "IP address range will be allocated automatically by IPAM"
-                $faIpamId = (Get-AzWebApp -Name $faIpamName -ResourceGroupName $faIPamRg).Id 
+            function Get-Ipam-Record {
+                param (
+                    $Environment,
+                    $Region,
+                    $NetworkSize,
+                    $Notes
+                )                
+                $faName = $faIpamName
+                $faRg = $faIpamRg   
+                $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Get-IPAM-Address'
-                $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faIpamId/functions/$faFunction" -Action listkeys -Force).default
-                $uri = 'https://' + $faIpamName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
-                If ($elzEnvName -eq 'Prod') {
-                  $nwEnv = 'Prod'
-                }
-                Else {
-                  $nwEnv = 'Nonprod'
-                }
+                $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
+                $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
                 $body = @{
                     'InputObject' = @{
-                        'NwEnvironment' = $nwEnv
-                        'NwRegion' = $elzRegionName
-                        'NwSize' = $elzVnetSize
-                        'NwNotes' = 'Added by Deploy-ELZ-Resources'
+                        'NwEnvironment' = $Environment
+                        'NwRegion' = $Region
+                        'NwSize' = $NetworkSize
+                        'NwNotes' = $Notes
                     }
                 } | ConvertTo-Json 
                 $params = @{
@@ -205,8 +204,20 @@ jobs:
                     'ContentType' = 'application/json'
                     'Body'        = $body
                 }
-                Write-Host "Calling IPAM function to request address range"
-                $elzVnetAddress = Invoke-RestMethod @params
+                Invoke-RestMethod @params
+            }
+
+            If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg -ErrorAction SilentlyContinue) -eq $null) {
+              Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
+              If ($elzVnetAddressRange -eq 'auto') {  
+                Write-Host "IP address range will be allocated automatically by IPAM"
+                If ($elzEnvName -eq 'Prod') {
+                  $nwEnv = 'Prod'
+                }
+                Else {
+                  $nwEnv = 'Nonprod'
+                }
+                $elzVnetAddress = Get-Ipam-Record -Environment $nwEnv -Region $elzRegionName -NetworkSize $elzVnetSize -Notes 'Added by Deploy-ELZ-Resources'
                 Write-Host "Address range returned from IPAM: " $elzVnetAddress
               }
               Else {
