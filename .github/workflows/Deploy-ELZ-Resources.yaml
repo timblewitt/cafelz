@@ -1,6 +1,6 @@
 # This workflow deploys Enterprise Landing Zone resources.
 
-name: Deploy-ELZ
+name: Deploy-ELZ-Resources'
 
 on:
   push:
@@ -76,7 +76,7 @@ jobs:
             # Generate LZIM resource names 
             #
             $lzimSubName = 'mp0004'   # Name/id of management subscription
-            $lzimRegionId = 'uks'     # Region identifier used in naming central network resources
+            $lzimRegionId = 'uks'     # Region identifier used in naming management resources
             $faLzimName = "fa-$lzimSubName-$lzimRegionId-lzim"
             $faLzimRg = "rg-$lzimSubName-$lzimRegionId-lzim"
 
@@ -89,35 +89,30 @@ jobs:
             $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
                         
             #
-            # If subscription name is 'auto', dynamically assign identifier
+            # If subscription name is 'auto', dynamically assign identifier using LZIM
             #
             If ($elzSubName -eq 'auto') {
-                Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
-                $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id
-                $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/Get-LZIM-Id?'
-                Write-Host "URI: " $uri
-                Write-Host "Environment: " $elzEnvName
-                $body = @{
-                  'InputObject' = @{
-                    'Environment' = $elzEnvName
-                    'Notes' = $Notes
-                    }
-                } | ConvertTo-Json
-                Write-Host "Body: " $body
-                $params = @{
-                  'Uri'         = $uri
-                  'Method'      = 'POST'
-                  'ContentType' = 'application/json'
-                  'Body'        = $Body
-                }
-                Write-Host "Calling LZIM function to request allocated Landing Zone identifier"
-                $elzId = Invoke-RestMethod @params -Verbose    
-                Write-Host "Landing Zone identifier returned from LZIM: " $elzId
+              Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
+              $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id
+              $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/Get-LZIM-Id?'
+              Write-Host "URI: " $uri
+              Write-Host "Environment: " $elzEnvName
+              $body = @{
+                'InputObject' = @{
+                  'Environment' = $elzEnvName
+                  'Notes' = $Notes
+                  }
+              } | ConvertTo-Json
+              Write-Host "Body: " $body
+              $params = @{
+                'Uri'         = $uri
+                'Method'      = 'POST'
+                'ContentType' = 'application/json'
+                'Body'        = $Body
               }
-              Else {
-                Write-Host "Failed to assign Landing Zone identifier"
-                $elzId = $null
-              }
+              Write-Host "Calling LZIM function to request a Landing Zone identifier"
+              $elzSubName = Invoke-RestMethod @params   
+              Write-Host "Landing Zone identifier returned from LZIM: " $elzSubName
             }
 
             #
@@ -125,18 +120,21 @@ jobs:
             # and check that manually supplied range is valid for S/M/L suffixes
             #
             If ($elzVnetAddressRange -eq 'auto') {
-              $networkSuffix = '23'  # Small network by default
-              if ($elzVnetSize -eq 'Medium') {
-                $networkSuffix = '22'
+              Write-Host "Calculate network suffix for network size: " $elzVnetSize
+              switch ($elzVnetSize) {
+                "Small" {$networkSuffix = '23'}
+                "Medium" {$networkSuffix = '22'}
+                "Large" {$networkSuffix = '21'}
+                default {$networkSuffix = '23'}
               }
-              if ($elzVnetSize -eq 'Large') {
-                $networkSuffix = '21'
-              }
+              Write-Host "NetworkSuffix: " $networkSuffix
             }  
             Else {
+              Write-Host "Identify suffix from manually supplied address range"
               $networkSuffix = $elzVnetAddressRange.Split("/")[1]
+              Write-Host "Network suffix: " $networkSuffix
               If ($networkSuffix -notin (21,22,23)) {
-                Write-Host "Supplied network suffix must be 21, 22 or 23"
+                Write-Host "ELZ ERROR: Supplied network suffix must be 21, 22 or 23"
               }
             }
 
@@ -146,6 +144,7 @@ jobs:
             switch ($elzRegionName) {
               "uksouth" {$elzRegionId = 'uks'}
               "ukwest" {$elzRegionId = 'ukw'}
+              default {$elzRegionId = 'uks'}
             }
 
             #
@@ -158,17 +157,13 @@ jobs:
             $subScope = '/subscriptions/' + $subId
 
             #
-            # Generate resource group names based on subscription and region identifiers
+            # Generate resource names based on subscription and region identifiers
             #
             $elzMonitorRg = "rg-$elzSubName-$elzRegionId-monitor"
             $elzBackupRg = "rg-$elzSubName-$elzRegionId-backup"
             $elzSecurityRg = "rg-$elzSubName-$elzRegionId-security"
-           
-            # 
-            # Generate networking resource names based on subscription and region identifiers
-            #
-            $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
             $elzVnetRg = "rg-$elzSubName-$elzRegionId-network"
+            $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
             
             # 
             # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
@@ -177,37 +172,26 @@ jobs:
               Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
               If ($elzVnetAddressRange -eq 'auto') {  
                 Write-Host "IP address range will be allocated automatically by IPAM"
-                $faId = (Get-AzWebApp -Name $faIpamName -ResourceGroupName $faIpamRg).Id
-                $registerFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/RegisterAddressSpace" -Action listkeys -Force).default
-                $uriRegister = 'https://' + $faIpamName + '.azurewebsites.net/api/RegisterAddressSpace?code=' + $registerFunctionKey
-                Write-Host "URI: " $uriRegister
-                Write-Host "NetworkSuffix: " $networkSuffix
-                If ($elzEnvName -ne 'Prod') {
-                  $nwEnvironment = 'Nonprod'
-                }
-                Else {
-                  $nwEnvironment = 'Prod'
-                }
-                Write-Host "Environment: " $elzEnvName
+                $faIpamId = (Get-AzWebApp -Name $faIpamName -ResourceGroupName $faIPamRg).Id 
+                $faFunction = 'Get-IPAM-Address'
+                $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faIpamId/functions/$faFunction" -Action listkeys -Force).default
+                $uri = 'https://' + $faIpamName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
                 $body = @{
-                  'InputObject' = @{
-                    'ResourceGroup' = $elzVnetRg
-                    'VirtualNetworkName' = $elzVnetName
-                    'NetworkSuffix' = $networkSuffix
-                    'NwEnvironment' = $nwEnvironment
-                    'NwRegion' = $elzRegionName
+                    'InputObject' = @{
+                        'NwEnvironment' = $elzEnvName
+                        'NwRegion' = $elzRegionName
+                        'NwSize' = $elzVnetSize
+                        'NwNotes' = 'Added by Deploy-ELZ-Resources'
                     }
-                } | ConvertTo-Json
-                Write-Host "Body: " $body
+                } | ConvertTo-Json 
                 $params = @{
-                  'Uri'         = $uriRegister
-                  'Method'      = 'POST'
-                  'ContentType' = 'application/json'
-                  'Body'        = $Body
+                    'Uri'         = $uri
+                    'Method'      = 'POST'
+                    'ContentType' = 'application/json'
+                    'Body'        = $body
                 }
                 Write-Host "Calling IPAM function to request address range"
-                $Result = Invoke-RestMethod @params -Verbose      
-                $elzVnetAddress = $Result.NetworkAddress
+                $elzVnetAddress = Invoke-RestMethod @params
                 Write-Host "Address range returned from IPAM: " $elzVnetAddress
               }
               Else {
@@ -227,7 +211,8 @@ jobs:
             #
             $vnetOctet1 = $elzVnetAddress.Split(".")[0]
             $vnetOctet2 = $elzVnetAddress.Split(".")[1]
-            $vnetOctet3 = $elzVnetAddress.Split(".")[2]
+            $vnetOctet3 = $elzVnetAddress.Split(".")[2]            
+
             if ($elzVnetSize -eq 'Small') {
               $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/25"
               $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".128/25"

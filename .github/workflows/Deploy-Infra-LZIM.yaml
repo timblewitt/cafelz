@@ -15,7 +15,7 @@
 # The function can be called using the REST API and it returns a free (unallocated) identifier for the given environment.
 #
 
-name: Deploy-LZIM
+name: Deploy-Infra-LZIM
 
 on:
   push:
