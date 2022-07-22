@@ -122,7 +122,7 @@ jobs:
 
             If ($elzSubName -eq 'auto') {
               Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
-              $elzSubName = Get-Lzim-Record -Environment $elzEnvName -Notes $Notes
+              $elzSubName = Get-Lzim-Record -Environment $elzEnvName -Notes 'Added by Deploy-ELZ-Resources'
               Write-Host "Landing Zone identifier returned from LZIM: " $elzSubName
             }
 
