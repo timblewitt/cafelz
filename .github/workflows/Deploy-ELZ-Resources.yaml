@@ -1,6 +1,6 @@
 # This workflow deploys Enterprise Landing Zone resources.
 
-name: Deploy-ELZ-Resources'
+name: Deploy-ELZ-Resources
 
 on:
   push:
