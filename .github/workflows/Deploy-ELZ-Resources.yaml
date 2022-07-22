@@ -91,29 +91,36 @@ jobs:
             #
             # If subscription name is 'auto', dynamically assign identifier using LZIM
             #
+            function Get-Lzim-Record {
+                param (
+                    $Environment,
+                    $Notes
+                )                
+                $faName = $faLzimName
+                $faRg = $faLzimRg     
+                $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
+                $faFunction = 'Get-LZIM-Id'
+                $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
+                $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
+                $body = @{
+                    'InputObject' = @{
+                        'Environment' = $Environment
+                        'Notes' = $Notes
+                    }
+                } | ConvertTo-Json 
+                $params = @{
+                    'Uri'         = $uri
+                    'Method'      = 'POST'
+                    'ContentType' = 'application/json'
+                    'Body'        = $body
+                }
+                $elzId = Invoke-RestMethod @params 
+                return $elzId 
+            }
+
             If ($elzSubName -eq 'auto') {
               Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
-              $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id 
-              $faFunction = 'Get-LZIM-Id'
-              $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
-              $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
-              Write-Host "URI: " $uri
-              Write-Host "Environment: " $elzEnvName
-              $body = @{
-                'InputObject' = @{
-                  'Environment' = $elzEnvName
-                  'Notes' = $Notes
-                  }
-              } | ConvertTo-Json
-              Write-Host "Body: " $body
-              $params = @{
-                'Uri'         = $uri
-                'Method'      = 'POST'
-                'ContentType' = 'application/json'
-                'Body'        = $Body
-              }
-              Write-Host "Calling LZIM function to request a Landing Zone identifier"
-              $elzSubName = Invoke-RestMethod @params   
+              $elzSubName = Get-Lzim-Record -Environment $elzEnvName -Notes $Notes
               Write-Host "Landing Zone identifier returned from LZIM: " $elzSubName
             }
 
@@ -178,9 +185,15 @@ jobs:
                 $faFunction = 'Get-IPAM-Address'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faIpamId/functions/$faFunction" -Action listkeys -Force).default
                 $uri = 'https://' + $faIpamName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
+                If ($elzEnvName -eq 'Prod') {
+                  $nwEnv = 'Prod'
+                }
+                Else {
+                  $nwEnv = 'Nonprod'
+                }
                 $body = @{
                     'InputObject' = @{
-                        'NwEnvironment' = $elzEnvName
+                        'NwEnvironment' = $nwEnv
                         'NwRegion' = $elzRegionName
                         'NwSize' = $elzVnetSize
                         'NwNotes' = 'Added by Deploy-ELZ-Resources'
