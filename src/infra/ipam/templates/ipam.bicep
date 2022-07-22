@@ -1,3 +1,4 @@
+param nwSubName string
 param mgmtSubName string
 param regionName string
 param regionId string
@@ -51,7 +52,7 @@ module plan './modules/plan.bicep' = {
   name: 'planDeployment'
   scope: rgIpam
   params: {
-    planName: 'plan-${mgmtSubName}-${regionId}-ipam'
+    planName: 'plan-${nwSubName}-${regionId}-ipam'
     planSkuName: 'EP1'
     planTier: 'Premium'
     location: regionName
@@ -62,7 +63,7 @@ module fa './modules/fa.bicep' = {
   name: 'faDeployment'
   scope: rgIpam
   params: {
-    faName: 'fa-${mgmtSubName}-${regionId}-ipam'
+    faName: 'fa-${nwSubName}-${regionId}-ipam'
     faplanId: plan.outputs.planId
     faStName: st.outputs.stName
     faStId: st.outputs.stId
