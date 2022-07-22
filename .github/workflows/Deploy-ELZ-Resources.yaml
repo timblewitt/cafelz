@@ -87,9 +87,6 @@ jobs:
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
             $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
             $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
-
-            Write-Host "TIMB: " $faIpamName
-            Write-Host "TIMB: " $faIpamRg
                         
             #
             # If subscription name is 'auto', dynamically assign identifier using LZIM
@@ -97,9 +94,6 @@ jobs:
             If ($elzSubName -eq 'auto') {
               Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
               $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id 
-
-              Write-Host "TIMB: " $faId
-
               $faFunction = 'Get-LZIM-Id'
               $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
               $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
@@ -170,13 +164,13 @@ jobs:
             $elzMonitorRg = "rg-$elzSubName-$elzRegionId-monitor"
             $elzBackupRg = "rg-$elzSubName-$elzRegionId-backup"
             $elzSecurityRg = "rg-$elzSubName-$elzRegionId-security"
-            $elzVnetRg = "rg-$elzSubName-$elzRegionId-network"
+            $elzNetworkRg = "rg-$elzSubName-$elzRegionId-network"
             $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
             
             # 
             # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
             #
-            If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzVnetRg -ErrorAction SilentlyContinue) -eq $null) {
+            If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg -ErrorAction SilentlyContinue) -eq $null) {
               Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
               If ($elzVnetAddressRange -eq 'auto') {  
                 Write-Host "IP address range will be allocated automatically by IPAM"
@@ -209,7 +203,7 @@ jobs:
             }
             Else {
               Write-Host "VNet $elzVnetName already exists in subscription $subName"
-              $vnet = Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzVnetRg
+              $vnet = Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg
               $elzVnetAddress = $vnet.AddressSpace.AddressPrefixes[0]
               Write-Host "Address range will be identified as the first already allocated range"
             }

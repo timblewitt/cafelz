@@ -11,8 +11,8 @@ function Add-Ipam-Records {
         $nwEnvironment,
         $nwRegion
     )
-    $faName = 'fa-mp0004-uks-ipam'
-    $faRg = 'rg-mp0004-uks-ipam'     
+    $faName = 'fa-np0004-uks-ipam'
+    $faRg = 'rg-np0004-uks-ipam'     
     $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
     $faFunction = 'Add-IPAM-Range'
     $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
