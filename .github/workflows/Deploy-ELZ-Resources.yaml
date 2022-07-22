@@ -102,7 +102,7 @@ jobs:
 
               $faFunction = 'Get-LZIM-Id'
               $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
-              $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
+              $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
               Write-Host "URI: " $uri
               Write-Host "Environment: " $elzEnvName
               $body = @{
