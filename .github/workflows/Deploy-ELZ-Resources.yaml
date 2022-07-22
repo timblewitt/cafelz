@@ -87,13 +87,19 @@ jobs:
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
             $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
             $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
+
+            Write-Host "TIMB: " $faIpamName
+            Write-Host "TIMB: " $faIpamRg
                         
             #
             # If subscription name is 'auto', dynamically assign identifier using LZIM
             #
             If ($elzSubName -eq 'auto') {
               Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
-              $faId = (Get-AzWebApp -Name $faIpamName -ResourceGroupName $faIpamRg).Id 
+              $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id 
+
+              Write-Host "TIMB: " $faId
+
               $faFunction = 'Get-LZIM-Id'
               $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
               $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
