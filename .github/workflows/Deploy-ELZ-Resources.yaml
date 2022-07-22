@@ -93,8 +93,10 @@ jobs:
             #
             If ($elzSubName -eq 'auto') {
               Write-Host "Landing Zone identifier will be allocated automatically by LZIM"
-              $faId = (Get-AzWebApp -Name $faLzimName -ResourceGroupName $faLzimRg).Id
-              $uri = 'https://' + $faLzimName + '.azurewebsites.net/api/Get-LZIM-Id?'
+              $faId = (Get-AzWebApp -Name $faIpamName -ResourceGroupName $faIpamRg).Id 
+              $faFunction = 'Get-LZIM-Id'
+              $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
+              $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
               Write-Host "URI: " $uri
               Write-Host "Environment: " $elzEnvName
               $body = @{
