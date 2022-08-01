@@ -9,7 +9,7 @@ on:
       inputs:
         elzsubname:
           type: string
-          description: 'Landing zone subscription name (auto for automatically generated)'
+          description: 'Landing zone subscription name'
           required: true
 
 jobs:
@@ -53,7 +53,7 @@ jobs:
             Start-Sleep 60
             Write-Host "Assigning roles for group" $groupName
             $roles = ('Contributor', 'Resource Policy Contributor')
-              foreach ($role in $roles) {
+            foreach ($role in $roles) {
               if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
                 Write-Host "Assigning role" $role          
                 New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
@@ -76,7 +76,7 @@ jobs:
             Start-Sleep 60
             Write-Host "Assigning roles for group" $groupName
             $roles = ('Virtual Machine Contributor', 'Storage Account Contributor')
-              foreach ($role in $roles) {
+            foreach ($role in $roles) {
               if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
                 Write-Host "Assigning role" $role          
                 New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
@@ -100,7 +100,7 @@ jobs:
             Start-Sleep 60
             Write-Host "Assigning roles for group" $groupName
             $roles = ('Reader')
-              foreach ($role in $roles) {
+            foreach ($role in $roles) {
               if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
                 Write-Host "Assigning role" $role          
                 New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
@@ -123,7 +123,7 @@ jobs:
             Start-Sleep 60
             Write-Host "Assigning roles for group" $groupName
             $roles = ('Key Vault Crypto Officer', 'Key Vault Secrets Officer', 'Key Vault Certificates Officer)
-              foreach ($role in $roles) {
+            foreach ($role in $roles) {
               if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
                 Write-Host "Assigning role" $role          
                 New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
@@ -146,7 +146,7 @@ jobs:
             Start-Sleep 60
             Write-Host "Assigning roles for group" $groupName
             $roles = ('Key Vault Crypto User', 'Key Vault Secrets User')
-              foreach ($role in $roles) {
+            foreach ($role in $roles) {
               if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
                 Write-Host "Assigning role" $role          
                 New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
@@ -155,5 +155,4 @@ jobs:
                 Write-Host "Role already assigned:" $role
               }
             }
-
           azPSVersion: latest 
