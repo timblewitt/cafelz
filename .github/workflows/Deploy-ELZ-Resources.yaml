@@ -59,7 +59,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS}}
           enable-AzPSSession: true
           
-      - name: Deploy ELZ 
+      - name: Deploy ELZ Resources
         uses: azure/powershell@v1
         with:
           inlineScript: |
@@ -71,8 +71,6 @@ jobs:
             $elzVnetSize  = '${{ github.event.inputs.networksize }}' 
             $elzSubName = '${{ github.event.inputs.elzsubname }}'
             $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
-
-            Write-Host "TIMB: " $elzEnvName
 
             # 
             # Generate LZIM resource names 

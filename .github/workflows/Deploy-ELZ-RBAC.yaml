@@ -1,0 +1,159 @@
+# This workflow deploys Enterprise Landing Zone resources.
+
+name: Deploy-ELZ-RBAC
+
+on:
+  push:
+    branches: [ none ]
+  workflow_dispatch:
+      inputs:
+        elzsubname:
+          type: string
+          description: 'Landing zone subscription name (auto for automatically generated)'
+          required: true
+
+jobs:
+  deploy-elz-rbac:
+    runs-on: windows-latest #self-hosted
+    steps:
+      - name: Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        uses: actions/checkout@v2
+      
+      - name: Log on to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS}}
+          enable-AzPSSession: true
+          
+      - name: Deploy ELZ RBAC
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            #
+            # Get supplied parameters
+            #
+            $elzSubName = '${{ github.event.inputs.elzsubname }}'
+
+            $subName = $elzSubName
+            $subName = 'CBPVisual Studio Enterprise'  # Temporary for testing 
+            $subName = 'Azure Landing Zone'  # Temporary for testing 
+            $subId = (Set-AzContext -SubscriptionName $subName).Subscription.Id
+            $subScope = '/subscriptions/' + $subId
+
+            Write-Host "Deploying ELZ Infra Admins AAD group and role assignment"            
+            $groupName = ('elz-' + $elzSubName + '-infraadmins')
+            if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+              Write-Host "Creating group" $groupName
+              $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+            }
+            else {
+              Write-Host "Group already exists:" $groupName
+              $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+            }
+            Start-Sleep 60
+            Write-Host "Assigning roles for group" $groupName
+            $roles = ('Contributor', 'Resource Policy Contributor')
+              foreach ($role in $roles) {
+              if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                Write-Host "Assigning role" $role          
+                New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+              }
+              else {
+                Write-Host "Role already assigned:" $role
+              }
+            }
+
+            Write-Host "Deploying ELZ '-workers' AAD group and role assignment"            
+            $groupName = ('elz-' + $elzSubName + '-workers')
+            if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+              Write-Host "Creating group" $groupName
+              $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+            }
+            else {
+              Write-Host "Group already exists:" $groupName
+              $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+            }
+            Start-Sleep 60
+            Write-Host "Assigning roles for group" $groupName
+            $roles = ('Virtual Machine Contributor', 'Storage Account Contributor')
+              foreach ($role in $roles) {
+              if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                Write-Host "Assigning role" $role          
+                New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+              }
+              else {
+                Write-Host "Role already assigned:" $role
+              }
+            }
+
+
+            Write-Host "Deploying ELZ ReadOnly Users AAD group and role assignment"            
+            $groupName = ('elz-' + $elzSubName + '-readonlyusers')
+            if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+              Write-Host "Creating group" $groupName
+              $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+            }
+            else {
+              Write-Host "Group already exists:" $groupName
+              $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+            }
+            Start-Sleep 60
+            Write-Host "Assigning roles for group" $groupName
+            $roles = ('Reader')
+              foreach ($role in $roles) {
+              if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                Write-Host "Assigning role" $role          
+                New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+              }
+              else {
+                Write-Host "Role already assigned:" $role
+              }
+            }
+
+            Write-Host "Deploying ELZ Key Vault Operators AAD group and role assignment"            
+            $groupName = ('elz-' + $elzSubName + '-keyvaultoperators')
+            if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+              Write-Host "Creating group" $groupName
+              $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+            }
+            else {
+              Write-Host "Group already exists:" $groupName
+              $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+            }
+            Start-Sleep 60
+            Write-Host "Assigning roles for group" $groupName
+            $roles = ('Key Vault Crypto Officer', 'Key Vault Secrets Officer', 'Key Vault Certificates Officer)
+              foreach ($role in $roles) {
+              if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                Write-Host "Assigning role" $role          
+                New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+              }
+              else {
+                Write-Host "Role already assigned:" $role
+              }
+            }
+
+            Write-Host "Deploying ELZ Key Vault Consumers AAD group and role assignment"            
+            $groupName = ('elz-' + $elzSubName + '-keyvaultconsumers')
+            if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+              Write-Host "Creating group" $groupName
+              $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+            }
+            else {
+              Write-Host "Group already exists:" $groupName
+              $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+            }
+            Start-Sleep 60
+            Write-Host "Assigning roles for group" $groupName
+            $roles = ('Key Vault Crypto User', 'Key Vault Secrets User')
+              foreach ($role in $roles) {
+              if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                Write-Host "Assigning role" $role          
+                New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+              }
+              else {
+                Write-Host "Role already assigned:" $role
+              }
+            }
+
+          azPSVersion: latest 
