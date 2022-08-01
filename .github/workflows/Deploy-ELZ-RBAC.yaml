@@ -133,26 +133,4 @@ jobs:
               }
             }
 
-            Write-Host "Deploying ELZ Key Vault Consumers AAD group and role assignment"            
-            $groupName = ('elz-' + $elzSubName + '-keyvaultconsumers')
-            if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
-              Write-Host "Creating group" $groupName
-              $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
-            }
-            else {
-              Write-Host "Group already exists:" $groupName
-              $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
-            }
-            Start-Sleep 60
-            Write-Host "Assigning roles for group" $groupName
-            $roles = ('Key Vault Crypto User', 'Key Vault Secrets User')
-            foreach ($role in $roles) {
-              if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
-                Write-Host "Assigning role" $role          
-                New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
-              }
-              else {
-                Write-Host "Role already assigned:" $role
-              }
-            }
           azPSVersion: latest 
