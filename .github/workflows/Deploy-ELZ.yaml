@@ -192,6 +192,9 @@ jobs:
             $subId = (Set-AzContext -SubscriptionName $subName).Subscription.Id
             $subScope = '/subscriptions/' + $subId
 
+            #
+            # Deploy resources if requested
+            #
             if ($elzdeployresources -eq 'Yes') {
               #
               # Generate resource names based on subscription and region identifiers
@@ -300,6 +303,9 @@ jobs:
                 -snetMgt $snetMgt           
             }
 
+            #
+            # Deploy RBAC if requested
+            #
             if ($elzdeployrbac -eq 'Yes') {
               Write-Host "Deploying ELZ Infra Admins AAD group and role assignment"            
               $groupName = ('elz-' + $elzSubName + '-infraadmins')
@@ -417,7 +423,10 @@ jobs:
               }
             }
             
-            if ($elzdeployrbac -eq 'Yes') {
+            #
+            # Deploy policies if requested
+            #
+            if ($elzdeploypolicies -eq 'Yes') {
 
             }
           azPSVersion: latest 
