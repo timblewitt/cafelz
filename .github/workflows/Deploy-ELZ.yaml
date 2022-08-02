@@ -46,7 +46,7 @@ on:
           required: true
           default: 'auto'
         deployresources:
-          type: string
+          type: choice
           description: 'Deploy ELZ resources?'
           required: true
           default: 'Yes'
@@ -54,7 +54,7 @@ on:
             - "Yes"
             - "No"
         deployrbac:
-          type: string
+          type: choice
           description: 'Deploy ELZ RBAC?'
           required: true
           default: 'Yes'
@@ -62,7 +62,7 @@ on:
             - "Yes"
             - "No"
         deploypolicies:
-          type: string
+          type: choice
           description: 'Deploy ELZ policies?'
           required: true
           default: 'Yes'
