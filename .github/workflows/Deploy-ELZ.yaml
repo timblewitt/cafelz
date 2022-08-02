@@ -1,4 +1,4 @@
-# This workflow deploys Enterprise Landing Zone resources.
+# This workflow deploys Enterprise Landing Zone resources, RBAC and policies.
 
 name: Deploy-ELZ
 
@@ -45,6 +45,30 @@ on:
           description: 'Virtual network address range (auto for IPAM)'
           required: true
           default: 'auto'
+        deployresources:
+          type: choice
+          description: 'Deploy ELZ resources?'
+          required: true
+          default: 'Yes'
+          options:
+            - "Yes"
+            - "No"
+        deployrbac:
+          type: choice
+          description: 'Deploy ELZ RBAC?'
+          required: true
+          default: 'Yes'
+          options:
+            - "Yes"
+            - "No"
+        deploypolicies:
+          type: choice
+          description: 'Deploy ELZ policies?'
+          required: true
+          default: 'Yes'
+          options:
+            - "Yes"
+            - "No"
 
 jobs:
   deploy-elz:
@@ -71,6 +95,9 @@ jobs:
             $elzVnetSize  = '${{ github.event.inputs.networksize }}' 
             $elzSubName = '${{ github.event.inputs.elzsubname }}'
             $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
+            $elzDeployResources = '${{ github.event.inputs.deployresources }}' 
+            $elzDeployRbac = '${{ github.event.inputs.deployrbac }}' 
+            $elzDeployPolicies = '${{ github.event.inputs.deploypolicies }}' 
 
             # 
             # Generate LZIM resource names 
@@ -166,123 +193,240 @@ jobs:
             $subScope = '/subscriptions/' + $subId
 
             #
-            # Generate resource names based on subscription and region identifiers
+            # Deploy resources if requested
             #
-            $elzMonitorRg = "rg-$elzSubName-$elzRegionId-monitor"
-            $elzBackupRg = "rg-$elzSubName-$elzRegionId-backup"
-            $elzSecurityRg = "rg-$elzSubName-$elzRegionId-security"
-            $elzNetworkRg = "rg-$elzSubName-$elzRegionId-network"
-            $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
-            
-            # 
-            # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
-            #
-            function Get-Ipam-Record {
-                param (
-                    $Environment,
-                    $Region,
-                    $NetworkSize,
-                    $Notes
-                )                
-                $faName = $faIpamName
-                $faRg = $faIpamRg   
-                $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-                $faFunction = 'Get-IPAM-Address'
-                $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
-                $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
-                $body = @{
-                    'InputObject' = @{
-                        'NwEnvironment' = $Environment
-                        'NwRegion' = $Region
-                        'NwSize' = $NetworkSize
-                        'NwNotes' = $Notes
-                    }
-                } | ConvertTo-Json 
-                $params = @{
-                    'Uri'         = $uri
-                    'Method'      = 'POST'
-                    'ContentType' = 'application/json'
-                    'Body'        = $body
-                }
-                Invoke-RestMethod @params
-            }
-
-            If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg -ErrorAction SilentlyContinue) -eq $null) {
-              Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
-              If ($elzVnetAddressRange -eq 'auto') {  
-                Write-Host "IP address range will be allocated automatically by IPAM"
-                If ($elzEnvName -eq 'Prod') {
-                  $nwEnv = 'Prod'
+            if ($elzdeployresources -eq 'Yes') {
+              #
+              # Generate resource names based on subscription and region identifiers
+              #
+              $elzMonitorRg = "rg-$elzSubName-$elzRegionId-monitor"
+              $elzBackupRg = "rg-$elzSubName-$elzRegionId-backup"
+              $elzSecurityRg = "rg-$elzSubName-$elzRegionId-security"
+              $elzNetworkRg = "rg-$elzSubName-$elzRegionId-network"
+              $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
+              
+              # 
+              # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
+              #
+              function Get-Ipam-Record {
+                  param (
+                      $Environment,
+                      $Region,
+                      $NetworkSize,
+                      $Notes
+                  )                
+                  $faName = $faIpamName
+                  $faRg = $faIpamRg   
+                  $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
+                  $faFunction = 'Get-IPAM-Address'
+                  $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
+                  $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
+                  $body = @{
+                      'InputObject' = @{
+                          'NwEnvironment' = $Environment
+                          'NwRegion' = $Region
+                          'NwSize' = $NetworkSize
+                          'NwNotes' = $Notes
+                      }
+                  } | ConvertTo-Json 
+                  $params = @{
+                      'Uri'         = $uri
+                      'Method'      = 'POST'
+                      'ContentType' = 'application/json'
+                      'Body'        = $body
+                  }
+                  Invoke-RestMethod @params
+              }
+              If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg -ErrorAction SilentlyContinue) -eq $null) {
+                Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
+                If ($elzVnetAddressRange -eq 'auto') {  
+                  Write-Host "IP address range will be allocated automatically by IPAM"
+                  If ($elzEnvName -eq 'Prod') {
+                    $nwEnv = 'Prod'
+                  }
+                  Else {
+                    $nwEnv = 'Nonprod'
+                  }
+                  $elzVnetAddress = Get-Ipam-Record -Environment $nwEnv -Region $elzRegionName -NetworkSize $elzVnetSize -Notes 'Added by Deploy-ELZ-Resources'
+                  Write-Host "Address range returned from IPAM: " $elzVnetAddress
                 }
                 Else {
-                  $nwEnv = 'Nonprod'
+                  Write-Host "IP address range will be allocated from supplied parameter " $elzVnetAddressRange
+                  $elzVnetAddress = $elzVnetAddressRange
                 }
-                $elzVnetAddress = Get-Ipam-Record -Environment $nwEnv -Region $elzRegionName -NetworkSize $elzVnetSize -Notes 'Added by Deploy-ELZ-Resources'
-                Write-Host "Address range returned from IPAM: " $elzVnetAddress
               }
               Else {
-                Write-Host "IP address range will be allocated from supplied parameter " $elzVnetAddressRange
-                $elzVnetAddress = $elzVnetAddressRange
+                Write-Host "VNet $elzVnetName already exists in subscription $subName"
+                $vnet = Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg
+                $elzVnetAddress = $vnet.AddressSpace.AddressPrefixes[0]
+                Write-Host "Address range will be identified as the first already allocated range"
+              }
+
+              #
+              # Calculate the subnet address space ranges from the supplied VNet address range
+              #
+              $vnetOctet1 = $elzVnetAddress.Split(".")[0]
+              $vnetOctet2 = $elzVnetAddress.Split(".")[1]
+              $vnetOctet3 = $elzVnetAddress.Split(".")[2]            
+
+              if ($elzVnetSize -eq 'Small') {
+                $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/25"
+                $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".128/25"
+                $snetDb = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".0/25"
+                $snetMgt = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".128/25"
+              }
+              else {
+                $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/24"
+                $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".0/24"
+                $snetDb = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 2).ToString() + ".0/24"
+                $snetMgt = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 3).ToString() + ".0/24"
+              }
+
+              #
+              # Deploy ELZ resources from template
+              #
+              Write-Host "Deploying landing zone resources"
+              $deploymentName = Get-Date -Format yyyyMMddHHmmss
+              New-AzDeployment -Name $deploymentName -Location $elzRegionName -Verbose -TemplateFile ./src/elz/templates/elz.bicep `
+                -elzSubName $elzSubName `
+                -elzRegionId $elzRegionId `
+                -elzRegionName $elzRegionName `
+                -elzMonitorRg $elzMonitorRg `
+                -elzBackupRg $elzBackupRg `
+                -elzSecurityRg $elzSecurityRg `
+                -elzNetworkRg $elzNetworkRg `
+                -elzVnetName $elzVnetName `
+                -elzVnetAddress $elzVnetAddress `
+                -snetWeb $snetWeb `
+                -snetApp $snetApp `
+                -snetDb $snetDb `
+                -snetMgt $snetMgt           
+            }
+
+            #
+            # Deploy RBAC if requested
+            #
+            if ($elzdeployrbac -eq 'Yes') {
+              Write-Host "Deploying ELZ Infra Admins AAD group and role assignment"            
+              $groupName = ('elz-' + $elzSubName + '-infraadmins')
+              if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+                Write-Host "Creating group" $groupName
+                $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+              }
+              else {
+                Write-Host "Group already exists:" $groupName
+                $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+              }
+              Start-Sleep 60
+              Write-Host "Assigning roles for group" $groupName
+              $roles = ('Contributor', 'Resource Policy Contributor')
+              foreach ($role in $roles) {
+                if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                  Write-Host "Assigning role" $role          
+                  New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+                }
+                else {
+                  Write-Host "Role already assigned:" $role
+                }
+              }
+
+              Write-Host "Deploying ELZ '-workers' AAD group and role assignment"            
+              $groupName = ('elz-' + $elzSubName + '-workers')
+              if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+                Write-Host "Creating group" $groupName
+                $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+              }
+              else {
+                Write-Host "Group already exists:" $groupName
+                $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+              }
+              Start-Sleep 60
+              Write-Host "Assigning roles for group" $groupName
+              $roles = ('Virtual Machine Contributor', 'Storage Account Contributor')
+              foreach ($role in $roles) {
+                if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                  Write-Host "Assigning role" $role          
+                  New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+                }
+                else {
+                  Write-Host "Role already assigned:" $role
+                }
+              }
+
+              Write-Host "Deploying ELZ ReadOnly Users AAD group and role assignment"            
+              $groupName = ('elz-' + $elzSubName + '-readonlyusers')
+              if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+                Write-Host "Creating group" $groupName
+                $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+              }
+              else {
+                Write-Host "Group already exists:" $groupName
+                $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+              }
+              Start-Sleep 60
+              Write-Host "Assigning roles for group" $groupName
+              $roles = ('Reader')
+              foreach ($role in $roles) {
+                if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                  Write-Host "Assigning role" $role          
+                  New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+                }
+                else {
+                  Write-Host "Role already assigned:" $role
+                }
+              }
+
+              Write-Host "Deploying ELZ Key Vault Operators AAD group and role assignment"            
+              $groupName = ('elz-' + $elzSubName + '-keyvaultoperators')
+              if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+                Write-Host "Creating group" $groupName
+                $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+              }
+              else {
+                Write-Host "Group already exists:" $groupName
+                $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+              }
+              Start-Sleep 60
+              Write-Host "Assigning roles for group" $groupName
+              $roles = ('Key Vault Crypto Officer', 'Key Vault Secrets Officer', 'Key Vault Certificates Officer')
+              foreach ($role in $roles) {
+                if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                  Write-Host "Assigning role" $role          
+                  New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+                }
+                else {
+                  Write-Host "Role already assigned:" $role
+                }
+              }
+
+              Write-Host "Deploying ELZ Key Vault Consumers AAD group and role assignment"            
+              $groupName = ('elz-' + $elzSubName + '-keyvaultconsumers')
+              if ((Get-AzADGroup | where {$_.DisplayName -eq $groupName}).Count -eq 0) {
+                Write-Host "Creating group" $groupName
+                $groupId = (New-AzADGroup -DisplayName $groupName -MailNickname $groupName).Id
+              }
+              else {
+                Write-Host "Group already exists:" $groupName
+                $groupId = (Get-AzADGroup | where {$_.DisplayName -eq $groupName} | Select -First 1).Id
+              }
+              Start-Sleep 60
+              Write-Host "Assigning roles for group" $groupName
+              $roles = ('Key Vault Crypto User', 'Key Vault Secrets User')
+              foreach ($role in $roles) {
+                if ((Get-AzRoleAssignment -ObjectId $groupId -RoleDefinitionName $role -Scope $subScope).Count -eq 0) {
+                  Write-Host "Assigning role" $role          
+                  New-AzRoleAssignment -ObjectId $groupId -Scope $subScope -RoleDefinitionName $role
+                }
+                else {
+                  Write-Host "Role already assigned:" $role
+                }
               }
             }
-            Else {
-              Write-Host "VNet $elzVnetName already exists in subscription $subName"
-              $vnet = Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg
-              $elzVnetAddress = $vnet.AddressSpace.AddressPrefixes[0]
-              Write-Host "Address range will be identified as the first already allocated range"
+            
+            #
+            # Deploy policies if requested
+            #
+            if ($elzdeploypolicies -eq 'Yes') {
+
             }
-
-            #
-            # Calculate the subnet address space ranges from the supplied VNet address range
-            #
-            $vnetOctet1 = $elzVnetAddress.Split(".")[0]
-            $vnetOctet2 = $elzVnetAddress.Split(".")[1]
-            $vnetOctet3 = $elzVnetAddress.Split(".")[2]            
-
-            if ($elzVnetSize -eq 'Small') {
-              $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/25"
-              $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".128/25"
-              $snetDb = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".0/25"
-              $snetMgt = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".128/25"
-            }
-            else {
-              $snetWeb = $vnetOctet1 + "." + $vnetOctet2 + "." + $vnetOctet3 + ".0/24"
-              $snetApp = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 1).ToString() + ".0/24"
-              $snetDb = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 2).ToString() + ".0/24"
-              $snetMgt = $vnetOctet1 + "." + $vnetOctet2 + "." + ([int]$vnetOctet3 + 3).ToString() + ".0/24"
-            }
-
-            #
-            # Deploy ELZ resources from template
-            #
-            Write-Host "Deploying landing zone resources"
-            $deploymentName = Get-Date -Format yyyyMMddHHmmss
-            New-AzDeployment -Name $deploymentName -Location $elzRegionName -Verbose -TemplateFile ./src/elz/templates/elz.bicep `
-              -elzSubName $elzSubName `
-              -elzRegionId $elzRegionId `
-              -elzRegionName $elzRegionName `
-              -elzMonitorRg $elzMonitorRg `
-              -elzBackupRg $elzBackupRg `
-              -elzSecurityRg $elzSecurityRg `
-              -elzNetworkRg $elzNetworkRg `
-              -elzVnetName $elzVnetName `
-              -elzVnetAddress $elzVnetAddress `
-              -snetWeb $snetWeb `
-              -snetApp $snetApp `
-              -snetDb $snetDb `
-              -snetMgt $snetMgt
-
-            #
-            # Update the IPAM storage table to reflect newly created VNet for dynamically assigned address ranges
-            #
-#            If ($elzVnetAddressRange -eq 'auto') {  
-#              Write-Host "Updating IPAM storage table"
-#              $updateFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/UpdateAddressSpace" -Action listkeys -Force).default
-#              $uriUpdate = 'https://' + $faIpamName + '.azurewebsites.net/api/UpdateAddressSpace?code=' + $UpdateFunctionKey
-#              $params = @{
-#                'Uri'         = $uriUpdate
-#                'Method'      = 'GET'
-#              }
-#              $Result = Invoke-RestMethod @params
-#            }
           azPSVersion: latest 
