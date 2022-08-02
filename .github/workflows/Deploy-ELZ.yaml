@@ -154,7 +154,7 @@ jobs:
             # 
             # Create new subscription
             #
-            $createSub = $true
+            $createSub = $false
             If ($createSub -eq $true) {
               Write-Host "Creating new Azure subscription"
               $deploymentName = Get-Date -Format yyyyMMddHHmmss
