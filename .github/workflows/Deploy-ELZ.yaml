@@ -247,7 +247,7 @@ jobs:
                   Else {
                     $nwEnv = 'Nonprod'
                   }
-                  $elzVnetAddress = Get-Ipam-Record -Environment $nwEnv -Region $elzRegionName -NetworkSize $elzVnetSize -Notes 'Added by Deploy-ELZ-Resources'
+                  $elzVnetAddress = Get-Ipam-Record -Environment $nwEnv -Region $elzRegionName -NetworkSize $elzVnetSize -Notes 'Added by Deploy-ELZ'
                   Write-Host "Address range returned from IPAM: " $elzVnetAddress
                 }
                 Else {
