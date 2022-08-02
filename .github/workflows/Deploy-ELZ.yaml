@@ -151,6 +151,17 @@ jobs:
               Write-Host "Landing Zone identifier returned from LZIM: " $elzSubName
             }
 
+            # 
+            # Create new subscription
+            #
+            $createSub = $true
+            If ($createSub -eq $true) {
+              Write-Host "Creating new Azure subscription"
+              $deploymentName = Get-Date -Format yyyyMMddHHmmss
+              New-AzDeployment -Name $deploymentName -Location $elzRegionName -Verbose -TemplateFile ./src/elz/templates/sub.bicep `
+                -elzSubName $elzSubName       
+            }
+
             #
             # Calculate the network suffix for S/M/L ranges for IPAM request
             # and check that manually supplied range is valid for S/M/L suffixes

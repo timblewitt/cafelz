@@ -9,8 +9,8 @@ function Get-Ipam-Record {
         $NetworkSize,
         $Notes
     )                
-    $faName = 'fa-mp0004-uks-ipam'
-    $faRg = 'rg-mp0004-uks-ipam'     
+    $faName = 'fa-np0004-uks-ipam'
+    $faRg = 'rg-np0004-uks-ipam'     
     $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
     $faFunction = 'Get-IPAM-Address'
     $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
@@ -32,4 +32,4 @@ function Get-Ipam-Record {
     Invoke-RestMethod @params
 }
 
-Get-Ipam-Record -Environment 'Nonprod' -Region 'uksouth' -NetworkSize 'Medium' -Notes 'Test addition'
+Get-Ipam-Record -Environment 'Nonprod' -Region 'uksouth' -NetworkSize 'Large' -Notes 'Test addition'
