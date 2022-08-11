@@ -16,10 +16,6 @@ param planName string
 param planSkuName string
 param planTier string
 param faName string
-param faplanId string
-param faStName string
-param faStId string
-param faStApiVersion string
 param logId string
 param location string
 
@@ -70,7 +66,7 @@ resource fa 'Microsoft.Web/sites@2022-03-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: faplanId
+    serverFarmId: plan.id
     siteConfig: {
       appSettings: [
         {
@@ -87,11 +83,11 @@ resource fa 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${faStName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${st.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${st.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${st.listKeys().keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${faStName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${st.listKeys().keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${st.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${st.listKeys().keys[0].value}'
         }        
       ]
       use32BitWorkerProcess: false
