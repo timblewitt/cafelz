@@ -1,7 +1,7 @@
-param nwSubName string
-param mgmtSubName string
 param regionName string
 param regionId string
+param nwSubName string
+param mgmtSubName string
 param rgIpamName string
 param rgMonitorName string
 
@@ -15,18 +15,6 @@ resource rgIpam 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 resource rgMonitor 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: rgMonitorName
   location: regionName
-}
-
-module st './modules/st.bicep' = {
-  name: 'stDeployment'
-  scope: rgIpam
-  params: {
-    stName: 'st${uniqueString(rgIpam.id)}ipam'
-    stSku: 'Standard_GRS'
-    stKind: 'StorageV2'
-    location: regionName
-    tableName: 'ipam'
-  }
 }
 
 module log './modules/log.bicep' = {
@@ -48,26 +36,18 @@ module aa './modules/aa.bicep' = {
   }
 }
 
-module plan './modules/plan.bicep' = {
-  name: 'planDeployment'
-  scope: rgIpam
-  params: {
-    planName: 'plan-${nwSubName}-${regionId}-ipam'
-    planSkuName: 'EP1'
-    planTier: 'Premium'
-    location: regionName
-  }
-}
-
 module fa './modules/fa.bicep' = {
   name: 'faDeployment'
   scope: rgIpam
   params: {
+    stName: 'st${uniqueString(rgIpam.id)}ipam'
+    stSku: 'Standard_GRS'
+    stKind: 'StorageV2'
+    tableName: 'ipam'
+    planName: 'plan-${nwSubName}-${regionId}-ipam'
+    planSkuName: 'EP1'
+    planTier: 'Premium'
     faName: 'fa-${nwSubName}-${regionId}-ipam'
-    faplanId: plan.outputs.planId
-    faStName: st.outputs.stName
-    faStId: st.outputs.stId
-    faStApiVersion: st.outputs.stApiVersion
     logId: log.outputs.logId
     location: regionName
   }
