@@ -19,7 +19,7 @@ param faName string
 param logId string
 param location string
 
-resource st 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource st 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   name: stName
   location: location
   sku: {
@@ -28,17 +28,17 @@ resource st 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   kind: stKind
 }
 
-resource tableservice 'Microsoft.Storage/storageAccounts/tableServices@2021-04-01' = {
+resource tableservice 'Microsoft.Storage/storageAccounts/tableServices@2021-09-01' = {
   name: 'default'
   parent: st
 }
 
-resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-04-01' = {
+resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-09-01' = {
   name: tableName
   parent: tableservice
 }
 
-resource plan 'Microsoft.Web/serverfarms@2021-02-01' = {
+resource plan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: planName
   location: location
   sku: {

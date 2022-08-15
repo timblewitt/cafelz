@@ -6,6 +6,9 @@ param location string
 resource plan 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: planName
   location: location
+  properties: {
+    reserved: false
+  }
   sku: {
     name: planSkuName
     tier: planTier
