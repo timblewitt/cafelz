@@ -17,20 +17,11 @@ resource rgMonitor 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: regionName
 }
 
-module log './modules/log.bicep' = {
-  name: 'logDeployment'
+module monitor './modules/monitor.bicep' = {
+  name: 'monitorDeployment'
   scope: rgMonitor
   params: {
     logName: 'log-${mgmtSubName}-${regionId}-01'
-    aaId: aa.outputs.aaId
-    location: regionName
-  }
-}
-
-module aa './modules/aa.bicep' = {
-  name: 'aaDeployment'
-  scope: rgMonitor
-  params: {
     aaName: 'aa-${mgmtSubName}-${regionId}-01'
     location: regionName
   }
@@ -48,7 +39,7 @@ module fa './modules/fa.bicep' = {
     planSkuName: 'EP1'
     planTier: 'Premium'
     faName: 'fa-${nwSubName}-${regionId}-ipam'
-    logId: log.outputs.logId
+    logId: monitor.outputs.logId
     location: regionName
   }
 }

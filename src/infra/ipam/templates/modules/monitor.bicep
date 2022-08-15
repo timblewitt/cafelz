@@ -1,8 +1,22 @@
 param logName string
-param aaId string
+param aaName string
 param location string 
 
-resource log 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+resource aa 'Microsoft.Automation/automationAccounts@2021-06-22' = {
+  name: aaName
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    publicNetworkAccess: false
+    sku: {
+      name: 'Basic'
+    }
+  }
+}
+
+resource log 'Microsoft.OperationalInsights/workspaces@2021-12-01-preview' = {
   name: logName
   location: location
   properties: {
@@ -21,7 +35,7 @@ resource log 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
 resource logAuto 'Microsoft.OperationalInsights/workspaces/linkedServices@2020-08-01' = {
   name: '${log.name}/Automation'
   properties: {
-    resourceId: aaId
+    resourceId: aa.id
   }
 }
 
