@@ -41,6 +41,9 @@ resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-09-0
 resource plan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: planName
   location: location
+  properties: {
+    reserved: false
+  }
   sku: {
     name: planSkuName
     tier: planTier
