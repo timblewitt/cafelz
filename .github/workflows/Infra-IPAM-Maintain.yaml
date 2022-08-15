@@ -60,6 +60,7 @@ jobs:
                     'ContentType' = 'application/json'
                     'Body'        = $body
                 }
+                Write-Host "Adding network range" $nwRange "in environment" $nwEnvironment "in region" $nwRegion " - " $nwNumber "records" 
                 Invoke-RestMethod @params
             }
 
