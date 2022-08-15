@@ -14,12 +14,14 @@ Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 
 Import-Module Az.Storage
 
+Connect-AzAccount -Identity
+
 # App Setting Parameters
 $StorageAccountName = $env:ipamStorageAccount
 Write-Host $StorageAccountName
 
 # Generating Account Key & Creating Context 
-$context = New-AzStorageContext -StorageAccountName $StorageAccountName
+$context = New-AzStorageContext -StorageAccountName $StorageAccountName 
 
 # Gather table names in the storage account
 $tables = (Get-AzStorageTable –Context $context).CloudTable | Select-Object Name -ExpandProperty Name
