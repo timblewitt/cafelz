@@ -15,7 +15,7 @@ Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 Import-Module Az.Storage
 
 # App Setting Parameters
-$StorageAccountName = $env:AIPASStorageAccountName
+$StorageAccountName = $env:ipamStorageAccount
 Write-Host $StorageAccountName
 
 # Generating Account Key & Creating Context 
@@ -29,5 +29,5 @@ foreach ($table in $tables) {
     Write-Host "Table found: $Table"
     $source = "https://$StorageAccountName.table.core.windows.net/$table"
     Write-Host "URL generated: $source"
-    C:\home\site\wwwroot\BackupIPAM\AzCopy.exe  /Source:$source /dest:C:\home\site\wwwroot\BackupIPAM\$table-backup /sourceKey:$key /PayloadFormat:CSV
+    C:\home\site\wwwroot\Backup-IPAM\AzCopy.exe  /Source:$source /dest:C:\home\site\wwwroot\Backup-IPAM\$table-backup /sourceKey:$key /PayloadFormat:CSV
 }
