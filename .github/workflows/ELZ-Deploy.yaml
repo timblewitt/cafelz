@@ -1,6 +1,6 @@
 # This workflow deploys Enterprise Landing Zone resources, RBAC and policies.
 
-name: Deploy-ELZ
+name: ELZ-Deploy
 
 on:
   push:
