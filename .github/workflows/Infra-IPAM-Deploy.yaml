@@ -5,7 +5,7 @@
 # The function can be called using the REST API and it returns a free (unallocated) network address for the given environment and location.
 #
 
-name: Deploy-Infra-IPAM
+name: Infra-IPAM-Deploy
 
 on:
   push:
