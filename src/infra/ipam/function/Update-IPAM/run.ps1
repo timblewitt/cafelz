@@ -23,10 +23,12 @@ foreach ($sub in Get-AzSubscription) {
     foreach ($ipamRow in Get-AzTableRow -Table $saTable) {
         $vnet = Get-AzVirtualNetwork | where {$ipamRow.NetworkAddress -in $_.AddressSpace.AddressPrefixes}
         if ($vnet -ne $null) {
+            Write-Verbose "$vnet.Name"
+            Write-Host "$vnet.ResourceGroupName"
             $ipamRow.Subscription = $sub.Name
             $ipamRow.VNetName = $vnet.Name
             $ipamRow.ResourceGroup = $vnet.ResourceGroupName
-            if ($ipamRow.Allocated -eq $false) {
+            if ($ipamRow.Allocated -ne $true) {
                 $ipamRow.Allocated = $true
                 $ipamRow.Notes = 'Updated by Update-IPAM'
                 $unmanagedAddresses += 1
