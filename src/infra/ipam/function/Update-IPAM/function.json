@@ -11,6 +11,12 @@
       ]
     },
     {
+      "name": "Timer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 40 13 * * *"
+    },
+    {
       "type": "http",
       "direction": "out",
       "name": "Response"
