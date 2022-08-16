@@ -1,5 +1,5 @@
 #
-# This workflow maintains the Landing Zone Identity Management (IPAM) Azure Function by adding useable identifiers to the LZIM storage table.
+# This workflow maintains the Landing Zone Identity Management (LZIM) Azure Function by adding useable identifiers to the LZIM storage table.
 #
 
 name: Infra-LZIM-Maintain
@@ -53,7 +53,7 @@ jobs:
                     'ContentType' = 'application/json'
                     'Body'        = $body
                 }
-                Write-Host "Adding" $number "landing zone identifiers for the" $nwEnvironment "environment" $nwEnvironment 
+                Write-Host "Adding" $number "landing zone identifiers for the" $environment "environment" 
                 Invoke-RestMethod @params      
             }
 
