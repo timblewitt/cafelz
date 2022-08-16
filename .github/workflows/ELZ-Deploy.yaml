@@ -220,33 +220,33 @@ jobs:
               # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
               #
               function Get-Ipam-Record {
-                  param (
-                      $Environment,
-                      $Region,
-                      $NetworkSize,
-                      $Notes
-                  )                
-                  $faName = $faIpamName
-                  $faRg = $faIpamRg   
-                  $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-                  $faFunction = 'Get-IPAM-Address'
-                  $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
-                  $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
-                  $body = @{
-                      'InputObject' = @{
-                          'NwEnvironment' = $Environment
-                          'NwRegion' = $Region
-                          'NwSize' = $NetworkSize
-                          'NwNotes' = $Notes
-                      }
-                  } | ConvertTo-Json 
-                  $params = @{
-                      'Uri'         = $uri
-                      'Method'      = 'POST'
-                      'ContentType' = 'application/json'
-                      'Body'        = $body
+                param (
+                  $Environment,
+                  $Region,
+                  $NetworkSize,
+                  $Notes
+                )                
+                $faName = $faIpamName
+                $faRg = $faIpamRg   
+                $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
+                $faFunction = 'Get-IPAM-Address'
+                $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
+                $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
+                $body = @{
+                  'InputObject' = @{
+                    'NwEnvironment' = $Environment
+                    'NwRegion' = $Region
+                    'NwSize' = $NetworkSize
+                    'NwNotes' = $Notes
                   }
-                  Invoke-RestMethod @params
+                } | ConvertTo-Json 
+                $params = @{
+                  'Uri'         = $uri
+                  'Method'      = 'POST'
+                  'ContentType' = 'application/json'
+                  'Body'        = $body
+                }
+                Invoke-RestMethod @params
               }
               If ((Get-AzVirtualNetwork -name $elzVnetName -ResourceGroupName $elzNetworkRg -ErrorAction SilentlyContinue) -eq $null) {
                 Write-Host "VNet $elzVnetName does not already exist in subscription $subName"
@@ -313,6 +313,24 @@ jobs:
                 -snetDb $snetDb `
                 -snetMgt $snetMgt           
             }
+
+            Write-Host "Updating IPAM with details of new VNet"
+            function Update-Ipam-Table {
+              $faName = $faIpamName
+              $faRg = $faIpamRg   
+              $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
+              $faFunction = 'Update-IPAM'
+              $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
+              $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
+
+              $params = @{
+                  'Uri'         = $uri
+                  'Method'      = 'POST'
+                  'ContentType' = 'application/json'
+              }
+              Invoke-RestMethod @params
+            }
+            Update-Ipam-Table
 
             #
             # Deploy RBAC if requested

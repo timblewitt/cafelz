@@ -1,6 +1,7 @@
+#
 # Update-IPAM
 #
-# This function .......
+# This function updates the IPAM table with details of VNets associated with allocated address ranges
 #
 using namespace System.Net
 
