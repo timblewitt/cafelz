@@ -28,8 +28,7 @@ jobs:
       - name: Create Function App
         uses: azure/powershell@v1
         with:
-          inlineScript: |           
-            $nwSubName = "np0004" 
+          inlineScript: |         
             $mgmtSubName = "mp0004"
             $regionName = "uksouth"
             $regionId = "uks"
@@ -37,8 +36,8 @@ jobs:
             $functionZipPath = './src/infra/ipam/ipam.zip'
             $templateSourceFile = './src/infra/ipam/templates/ipam.bicep'
 
-            $faName = "fa-$nwSubName-$regionId-ipam"
-            $rgIpamName = "rg-$nwSubName-$regionId-ipam"
+            $faName = "fa-$mgmtSubName-$regionId-ipam"
+            $rgIpamName = "rg-$mgmtSubName-$regionId-ipam"
             $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"
@@ -48,7 +47,7 @@ jobs:
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
             New-AzDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile `
-                -regionName $regionName -regionId $regionId -nwSubName $nwSubName -mgmtSubName $mgmtSubName -rgIpamName $rgIpamName -rgMonitorName $rgMonitorName
+                -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgIpamName $rgIpamName -rgMonitorName $rgMonitorName
             Start-Sleep 60
             
             Write-Output "Publishing function to function app"

@@ -19,14 +19,24 @@ $saCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $storageAccoun
 $saTable = (Get-AzStorageTable –Name $saTableName –Context $saCtx).CloudTable
 
 $unmanagedAddresses = 0
-foreach ($sub in Get-AzSubscription) {
+$query = 'resourcecontainers
+| where type == "microsoft.resources/subscriptions"'
+
+#$subs = Search-AzGraph -Query $query
+
+$subs = Get-AzSubscription -TenantId 'cef99625-c8ab-4a7b-baa2-3dd4811009be'
+Write-Host "TIMB7: " $subs.count
+foreach ($sub in $subs) {
     Set-AzContext -Subscription $sub.Id
+    Write-Host "TIMB6: " $sub.Name
     foreach ($ipamRow in Get-AzTableRow -Table $saTable) {
-        Write-Host "TIMB2: $ipamRow.NetworkAddress"
+        $na = $ipamRow.NetworkAddress
+        Write-Host "TIMB2: " $na
         $vnet = Get-AzVirtualNetwork | where {$ipamRow.NetworkAddress -in $_.AddressSpace.AddressPrefixes}
+        Write-Host "TIMB3:" $vnet
         if ($vnet -ne $null) {
-            Write-Host "TIMB3: $vnet.ResourceGroupName"
-            Write-Host "TIMB4: $vnet.Name"
+            Write-Host "TIMB4: " $vnet.ResourceGroupName
+            Write-Host "TIMB5: " $vnet.Name
             $ipamRow.Subscription = $sub.Name
             $ipamRow.VNetName = $vnet.Name
             $ipamRow.ResourceGroup = $vnet.ResourceGroupName

@@ -1,6 +1,5 @@
 param regionName string
 param regionId string
-param nwSubName string
 param mgmtSubName string
 param rgIpamName string
 param rgMonitorName string
@@ -35,10 +34,10 @@ module fa './modules/fa.bicep' = {
     stSku: 'Standard_GRS'
     stKind: 'StorageV2'
     tableName: 'ipam'
-    planName: 'plan-${nwSubName}-${regionId}-ipam'
+    planName: 'plan-${mgmtSubName}-${regionId}-ipam'
     planSkuName: 'EP1'
     planTier: 'Premium'
-    faName: 'fa-${nwSubName}-${regionId}-ipam'
+    faName: 'fa-${mgmtSubName}-${regionId}-ipam'
     logId: monitor.outputs.logId
     location: regionName
   }
