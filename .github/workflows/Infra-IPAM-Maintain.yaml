@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy-azurefunction:
+  maintain-azurefunction:
     runs-on: windows-latest
     steps:
       - name: Check out repository under $GITHUB_WORKSPACE, so job can access it
@@ -22,7 +22,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
           
-      - name: Create Function App
+      - name: Update Function App
         uses: azure/powershell@v1
         with:
           inlineScript: |      
