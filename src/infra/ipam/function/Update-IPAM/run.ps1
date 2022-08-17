@@ -13,6 +13,7 @@ Write-Host "PowerShell HTTP trigger function processed a request."
 
 # Add records to an Azure storage table (storage account name is an application setting configured during function deployment)
 $storageAccount = $env:ipamStorageAccount
+Write-Host "TIMB1: $storageAccount"
 $saTableName = 'ipam'
 $saCtx = (Get-AzStorageAccount | where {$_.StorageAccountName -eq $storageAccount}).Context
 $saTable = (Get-AzStorageTable –Name $saTableName –Context $saCtx).CloudTable
@@ -21,10 +22,11 @@ $unmanagedAddresses = 0
 foreach ($sub in Get-AzSubscription) {
     Set-AzContext -Subscription $sub.Id
     foreach ($ipamRow in Get-AzTableRow -Table $saTable) {
+        Write-Host "TIMB2: $ipamRow.NetworkAddress"
         $vnet = Get-AzVirtualNetwork | where {$ipamRow.NetworkAddress -in $_.AddressSpace.AddressPrefixes}
         if ($vnet -ne $null) {
-            Write-Verbose "$vnet.Name"
-            Write-Host "$vnet.ResourceGroupName"
+            Write-Host "TIMB3: $vnet.ResourceGroupName"
+            Write-Host "TIMB4: $vnet.Name"
             $ipamRow.Subscription = $sub.Name
             $ipamRow.VNetName = $vnet.Name
             $ipamRow.ResourceGroup = $vnet.ResourceGroupName
@@ -37,8 +39,6 @@ foreach ($sub in Get-AzSubscription) {
         }    
     }
 }
-
-# Report all records
 $results = "Unmanaged address ranges found: " + $unmanagedAddresses
 
 # Associate values to output bindings by calling 'Push-OutputBinding'.
