@@ -110,7 +110,7 @@ jobs:
             # 
             # Generate IPAM resource names 
             #
-            $ipamSubName = 'np0004'   # Name/id of connectivity (network) subscription
+            $ipamSubName = 'mp0004'   # Name/id of management subscription hosting IPAM
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
             $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
             $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
