@@ -319,7 +319,7 @@ jobs:
               $faName = $faIpamName
               $faRg = $faIpamRg   
               $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-              $faFunction = 'Update-IPAM'
+              $faFunction = 'Update-IPAM-HTTP'
               $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
               $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
 
