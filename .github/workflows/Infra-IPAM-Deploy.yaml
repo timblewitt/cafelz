@@ -66,4 +66,8 @@ jobs:
             Write-Output "Assigning Contributor role for the function app to the storage account"
             $saName = (Get-AzStorageAccount -ResourceGroupName $rgIpamName | Where-Object {$_.StorageAccountName -like 'st*ipam'}).StorageAccountName
             New-AzRoleAssignment -ResourceGroupName $rgIpamName -ResourceName $saName -RoleDefinitionName 'Contributor' -ObjectId $faObj.Identity.PrincipalId -ResourceType 'Microsoft.Storage/storageAccounts' -ErrorAction Continue
+            
+            Write-Output "Assigning Reader role for the function app to the LandingZones management group"
+            $mg = Get-AzManagementGroup | where {$_.Name -eq 'LandingZones'}
+            New-AzRoleAssignment -RoleDefinitionName 'Reader' -ObjectId $faObj.Identity.PrincipalId -Scope $mg.Id -ErrorAction Continue
           azPSVersion: latest 
