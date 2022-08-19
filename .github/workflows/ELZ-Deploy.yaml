@@ -110,7 +110,7 @@ jobs:
             # 
             # Generate IPAM resource names 
             #
-            $ipamSubName = 'np0004'   # Name/id of connectivity (network) subscription
+            $ipamSubName = 'mp0004'   # Name/id of management subscription hosting IPAM
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
             $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
             $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
@@ -319,7 +319,7 @@ jobs:
               $faName = $faIpamName
               $faRg = $faIpamRg   
               $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
-              $faFunction = 'Update-IPAM'
+              $faFunction = 'Update-IPAM-HTTP'
               $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
               $uri = 'https://' + $faName + '.azurewebsites.net/api/' + $faFunction + '?code=' + $faFunctionKey
 
