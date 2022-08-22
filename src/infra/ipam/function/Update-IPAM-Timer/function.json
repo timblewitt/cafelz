@@ -5,7 +5,7 @@
       "name": "Timer",
       "type": "timerTrigger",
       "direction": "in",
-      "schedule": "0 59 10 * * *"
+      "schedule": "0 48 12 * * *"
     },
     {
       "type": "http",
