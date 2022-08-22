@@ -1,10 +1,11 @@
 {
   "bindings": [
     {
+      "authlevel": "function",
       "name": "Timer",
       "type": "timerTrigger",
       "direction": "in",
-      "schedule": "0 21 13 * * *"
+      "schedule": "0 0 22 * * *"
     },
     {
       "type": "http",

@@ -55,13 +55,6 @@ for ($i = 0; $i -lt $nwNumber; $i++) {
     If ($tableRow -eq $null) {
         Add-AzTableRow -Table $saTable -PartitionKey $tablePartKey -RowKey ($rowKey) -Property @{"NetworkAddress"="$nwAddress";"Environment"="$nwEnvironment";"Region"="$nwRegion";"Allocated"=$false;"Notes"="";"Subscription"="$null";"ResourceGroup"="$null";"VNetName"="$null"}
     }
-#    Else {
-#        If ($tableRow.Allocated -eq $false) {
-#            $tableRow.Environment = $nwEnvironment
-#            $tableRow.Region = $nwRegion
-#            $tableRow | Update-AzTableRow -Table $saTable
-#        } 
-#    }
 }
 
 # Report all records

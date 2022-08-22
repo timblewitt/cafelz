@@ -21,8 +21,3 @@ Write-Host "PowerShell timer trigger function ran! TIME: $currentUTCtime"
 Write-Host "PowerShell HTTP trigger function processed a request."
 
 Update-IPAM
-
-# Associate values to output bindings by calling 'Push-OutputBinding'.
-Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-    StatusCode = [HttpStatusCode]::OK
-})
