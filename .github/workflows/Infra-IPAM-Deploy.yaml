@@ -69,5 +69,5 @@ jobs:
             
             Write-Output "Assigning Reader role for the function app to the LandingZones management group"
             $mg = Get-AzManagementGroup | where {$_.Name -eq 'LandingZones'}
-            New-AzRoleAssignment -RoleDefinitionName 'Reader' -ObjectId $faObj.Identity.PrincipalId -Scope $mg.Id -ErrorAction Continue
+            New-AzRoleAssignment -RoleDefinitionName 'Tag Contributor' -ObjectId $faObj.Identity.PrincipalId -Scope $mg.Id -ErrorAction Continue
           azPSVersion: latest 
