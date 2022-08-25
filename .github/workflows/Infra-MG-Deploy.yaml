@@ -32,5 +32,5 @@ jobs:
             Write-Host "Deploying landing zone resources"
             $mgLocation = 'uksouth'
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
-            New-AzDeployment -Name $deploymentName -Location $mgLocation -Verbose -TemplateFile ./src/infra/mg/.mg.bicep
+            New-AzTenantDeployment -Name $deploymentName -Location $mgLocation -Verbose -TemplateFile ./src/infra/mg/.mg.bicep
           azPSVersion: latest 
