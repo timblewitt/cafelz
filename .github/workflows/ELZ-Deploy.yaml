@@ -456,6 +456,9 @@ jobs:
             # Deploy policies if requested
             #
             if ($elzdeploypolicies -eq 'Yes') {
-
+              Write-Host "Deploying policy: Allowed locations"
+              $AllowedLocations = @{'listOfAllowedLocations'=('uksouth','ukwest')}
+              $Policy = Get-AzPolicyDefinition -BuiltIn | Where-Object {$_.Properties.DisplayName -eq 'Allowed locations'}
+              New-AzPolicyAssignment -Name 'Allowed locations' -PolicyDefinition $Policy -Scope $subScope -PolicyParameterObject $AllowedLocations
             }
           azPSVersion: latest 
