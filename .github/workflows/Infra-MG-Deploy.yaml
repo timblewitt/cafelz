@@ -1,0 +1,36 @@
+#
+# This workflow deploys the Azure management group hierarchy
+#
+
+name: Infra-MG-Deploy
+
+on:
+  push:
+    branches: [ none ]
+  workflow_dispatch:
+
+jobs:
+  deploy-mg:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository under $GITHUB_WORKSPACE, so job can access it
+        uses: actions/checkout@v2
+
+      - name: Log on to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+          
+      - name: Deploy Management Groups
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |     
+            $regionName = "uksouth"    
+            $templateSourceFile = './src/infra/mg/mg.bicep'
+
+            Write-Output "Deploying Azure resources"
+            $deploymentName = Get-Date -Format yyyyMMddHHmmss
+            $deploymentName
+            New-AzManagementGroupDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile
+          azPSVersion: latest 
