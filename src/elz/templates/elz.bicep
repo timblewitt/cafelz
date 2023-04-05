@@ -1,3 +1,4 @@
+param orgId string
 param elzSubName string
 param elzRegionId string
 param elzRegionName string
@@ -49,7 +50,7 @@ module rsv './modules/rsv.bicep' = {
   name: 'rsvDeployment'
   scope: rgBackup
   params: {
-    rsvName: 'rsv-${elzSubName}-${elzRegionId}-01'
+    rsvName: 'rsv-${orgId}-${elzSubName}-${elzRegionId}-01'
     location: elzRegionName
   }
 }
@@ -68,27 +69,27 @@ module log './modules/log.bicep' = {
   name: 'logDeployment'
   scope: rgMonitor
   params: {
-    logName: 'log-${elzSubName}-${elzRegionId}-01'
+    logName: 'log-${orgId}-${elzSubName}-${elzRegionId}-01'
     aaId: aa.outputs.aaId
     location: elzRegionName
   }
 }
 
-module kv './modules/kv.bicep' = {
-  name: 'kvDeployment'
-  scope: rgSecurity
-  params: {
-    kvName: 'kv-${elzSubName}-${elzRegionId}-01'
-    logId: log.outputs.logId
-    location: elzRegionName
-  }
-}
+//module kv './modules/kv.bicep' = {
+//  name: 'kvDeployment'
+//  scope: rgSecurity
+//  params: {
+//    kvName: 'kv-${orgId}-${elzSubName}-${elzRegionId}-01'
+//    logId: log.outputs.logId
+//    location: elzRegionName
+//  }
+//}
 
 module aa './modules/aa.bicep' = {
   name: 'aaDeployment'
   scope: rgMonitor
   params: {
-    aaName: 'aa-${elzSubName}-${elzRegionId}-01'
+    aaName: 'aa-${orgId}-${elzSubName}-${elzRegionId}-01'
     location: elzRegionName
   }
 }
