@@ -28,9 +28,10 @@ jobs:
           inlineScript: |     
             $regionName = "uksouth"    
             $templateSourceFile = './src/infra/mg/mg.bicep'
-
+            $tenantRootMgId = (get-azmanagementgroup | where {$_.DisplayName -eq 'Tenant Root Group'}).name
+            
             Write-Output "Deploying Azure resources"
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
-            New-AzManagementGroupDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile
+            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId $tenantRootMgId -Location $regionName -Verbose -TemplateFile $templateSourceFile
           azPSVersion: latest 

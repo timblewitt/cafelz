@@ -3,14 +3,14 @@
 #
 # Each new Azure landing zone is assigned a unique identifier for naming resources within that landing zone.
 # The format in this case is:
-#    zennnn (e.g. zp0197)
+#    zennn (e.g. zp097)
 # where e = environment 
 #    p = production
 #    t = test
 #    d = dev
 #    s = staging
 #    q = QA
-# and n is a unique number e.g. 0001.
+# and n is a unique number e.g. 001.
 # 
 # The function can be called using the REST API and it returns a free (unallocated) identifier for the given environment.
 #
@@ -38,17 +38,18 @@ jobs:
       - name: Create Function App
         uses: azure/powershell@v1
         with:
-          inlineScript: |           
-            $mgmtSubName = "mp0004"
+          inlineScript: |         
+            $orgId = "tim"    
+            $mgmtSubName = "mp001"
             $regionName = "uksouth"
             $regionId = "uks"
             $functionSourceFolder = './src/infra/lzim/function/*'
             $functionZipPath = './src/infra/lzim/lzim.zip'
             $templateSourceFile = './src/infra/lzim/templates/lzim.bicep'
 
-            $faName = "fa-$mgmtSubName-$regionId-lzim"
-            $rgLzimName = "rg-$mgmtSubName-$regionId-lzim"
-            $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
+            $faName = "fa-$orgId-$mgmtSubName-$regionId-lzim"
+            $rgLzimName = "rg-$orgId-$mgmtSubName-$regionId-lzim"
+            $rgMonitorName = "rg-$orgId-$mgmtSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"
             Compress-Archive -Path $functionSourceFolder -DestinationPath $functionZipPath -Force
@@ -57,7 +58,7 @@ jobs:
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
             New-AzDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile `
-                -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgLzimName $rgLzimName -rgMonitorName $rgMonitorName
+                -orgId $orgId -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgLzimName $rgLzimName -rgMonitorName $rgMonitorName
             Start-Sleep 60
             
             Write-Output "Publishing function to function app"

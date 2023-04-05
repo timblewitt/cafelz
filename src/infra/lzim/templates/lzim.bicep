@@ -1,3 +1,4 @@
+param orgId string
 param regionName string
 param regionId string
 param mgmtSubName string
@@ -20,8 +21,8 @@ module monitor './modules/monitor.bicep' = {
   name: 'monitorDeployment'
   scope: rgMonitor
   params: {
-    logName: 'log-${mgmtSubName}-${regionId}-01'
-    aaName: 'aa-${mgmtSubName}-${regionId}-01'
+    logName: 'log-${orgId}-${mgmtSubName}-${regionId}-01'
+    aaName: 'aa-${orgId}-${mgmtSubName}-${regionId}-01'
     location: regionName
   }
 }
@@ -34,10 +35,10 @@ module fa './modules/fa.bicep' = {
     stSku: 'Standard_GRS'
     stKind: 'StorageV2'
     tableName: 'lzim'
-    planName: 'plan-${mgmtSubName}-${regionId}-lzim'
+    planName: 'plan-${orgId}-${mgmtSubName}-${regionId}-lzim'
     planSkuName: 'EP1'
     planTier: 'Premium'
-    faName: 'fa-${mgmtSubName}-${regionId}-lzim'
+    faName: 'fa-${orgId}-${mgmtSubName}-${regionId}-lzim'
     logId: monitor.outputs.logId
     location: regionName
   }

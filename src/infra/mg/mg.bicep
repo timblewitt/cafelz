@@ -1,7 +1,7 @@
 targetScope = 'managementGroup'
 
-//param elzSubName string
-//param elzRegionId string
+param canary bool = false
+param singleplatform bool = false
 
 resource mgliveorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
   name: 'LiveOrgRoot'
@@ -24,7 +24,7 @@ resource mgplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
   name: 'Identity'
   scope: tenant()
   properties: {
@@ -37,7 +37,7 @@ resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
   name: 'Management'
   scope: tenant()
   properties: {
@@ -50,7 +50,7 @@ resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
   name: 'Connectivity'
   scope: tenant()
   properties: {
@@ -102,7 +102,7 @@ resource mgdecommission 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgcanaryorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanaryorgroot 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanaryOrgRoot'
   scope: tenant()
   properties: {
@@ -110,7 +110,7 @@ resource mgcanaryorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgcanaryplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanaryplatform 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanaryPlatform'
   scope: tenant()
   properties: {
@@ -123,7 +123,7 @@ resource mgcanaryplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgcanaryidentity 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanaryidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanaryIdentity'
   scope: tenant()
   properties: {
@@ -136,7 +136,7 @@ resource mgcanaryidentity 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgcanarymanagement 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanarymanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanaryManagement'
   scope: tenant()
   properties: {
@@ -149,7 +149,7 @@ resource mgcanarymanagement 'Microsoft.Management/managementGroups@2021-04-01' =
   }
 }
 
-resource mgcanaryconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanaryconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanaryConnectivity'
   scope: tenant()
   properties: {
@@ -162,7 +162,7 @@ resource mgcanaryconnectivity 'Microsoft.Management/managementGroups@2021-04-01'
   }
 }
 
-resource mgcanarylandingzones 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanarylandingzones 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanaryLandingZones'
   scope: tenant()
   properties: {
@@ -175,7 +175,7 @@ resource mgcanarylandingzones 'Microsoft.Management/managementGroups@2021-04-01'
   }
 }
 
-resource mgcanarysandbox 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgcanarysandbox 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
   name: 'CanarySandbox'
   scope: tenant()
   properties: {
