@@ -119,8 +119,8 @@ jobs:
             #
             $ipamSubName = 'mp001'   # Name/id of management subscription hosting IPAM
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
-            $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
-            $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
+            $faIpamName = "fa-$orgId-$ipamSubName-$ipamRegionId-ipam"
+            $faIpamRg = "rg-$orgId-$ipamSubName-$ipamRegionId-ipam"
                         
             #
             # If subscription name is 'auto', dynamically assign identifier using LZIM
