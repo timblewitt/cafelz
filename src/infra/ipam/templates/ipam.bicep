@@ -35,7 +35,7 @@ module fa './modules/fa.bicep' = {
     stSku: 'Standard_GRS'
     stKind: 'StorageV2'
     tableName: 'ipam'
-    planName: 'plan-${mgmtSubName}-${regionId}-ipam'
+    planName: 'plan-${orgId}-${mgmtSubName}-${regionId}-ipam'
     planSkuName: 'EP1'
     planTier: 'Premium'
     faName: 'fa-${orgId}-${mgmtSubName}-${regionId}-ipam'
