@@ -30,7 +30,7 @@ $tablePartKey = "LZIM"
 $lzPrefix = 'z' + $lzEnv.ToLower()[0]
 
 for ($row = 1 ; $row -le $lzNumber ; $row++){    
-    $rowKey = $lzPrefix + “{0:d4}” -f $row  # e.g. zp0318
+    $rowKey = $lzPrefix + “{0:d3}” -f $row  # e.g. zp138
     Add-AzTableRow `
     -table $saTable `
     -partitionKey $tablePartKey `
