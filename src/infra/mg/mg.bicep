@@ -1,13 +1,13 @@
 targetScope = 'managementGroup'
 
-param canary bool = false
+param orgRootMg string = 'OrgRoot'
 param singleplatform bool = false
 
 resource mgliveorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
-  name: 'LiveOrgRoot'
+  name: orgRootMg
   scope: tenant()
   properties: {
-    displayName: 'LiveOrgRoot'
+    displayName: orgRootMg
   }
 }
 
@@ -101,90 +101,3 @@ resource mgdecommission 'Microsoft.Management/managementGroups@2021-04-01' = {
     displayName: 'Decommission'
   }
 }
-
-resource mgcanaryorgroot 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryOrgRoot'
-  scope: tenant()
-  properties: {
-    displayName: 'CanaryOrgRoot'
-  }
-}
-
-resource mgcanaryplatform 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryPlatform'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryorgroot.id
-      }
-    }
-    displayName: 'CanaryPlatform'
-  }
-}
-
-resource mgcanaryidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryIdentity'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryplatform.id
-      }
-    }
-    displayName: 'CanaryIdentity'
-  }
-}
-
-resource mgcanarymanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryManagement'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryplatform.id
-      }
-    }
-    displayName: 'CanaryManagement'
-  }
-}
-
-resource mgcanaryconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryConnectivity'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryplatform.id
-      }
-    }
-    displayName: 'CanaryConnectivity'
-  }
-}
-
-resource mgcanarylandingzones 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryLandingZones'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryorgroot.id
-      }
-    }
-    displayName: 'CanaryLandingZones'
-  }
-}
-
-resource mgcanarysandbox 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanarySandbox'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryorgroot.id
-      }
-    }
-    displayName: 'CanarySandbox'
-  }
-}
-

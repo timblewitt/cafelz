@@ -25,7 +25,8 @@ jobs:
       - name: Deploy Management Groups
         uses: azure/powershell@v1
         with:
-          inlineScript: |     
+          inlineScript: |   
+            $orgRootMg = "timb"  
             $regionName = "uksouth"    
             $templateSourceFile = './src/infra/mg/mg.bicep'
             $tenantRootMgId = (get-azmanagementgroup | where {$_.DisplayName -eq 'Tenant Root Group'}).name
@@ -33,5 +34,6 @@ jobs:
             Write-Output "Deploying Azure resources"
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
-            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId $tenantRootMgId -Location $regionName -Verbose -TemplateFile $templateSourceFile
+            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId $tenantRootMgId -Location $regionName -Verbose -TemplateFile $templateSourceFile  `
+                -orgRootMg $orgRootMg 
           azPSVersion: latest 
