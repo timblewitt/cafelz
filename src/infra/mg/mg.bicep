@@ -24,7 +24,7 @@ resource mgplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == false) {
+resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == 'No') {
   name: 'Identity'
   scope: tenant()
   properties: {
@@ -37,7 +37,7 @@ resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (sin
   }
 }
 
-resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == false) {
+resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == 'No') {
   name: 'Management'
   scope: tenant()
   properties: {
@@ -50,7 +50,7 @@ resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (s
   }
 }
 
-resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == false) {
+resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == 'No') {
   name: 'Connectivity'
   scope: tenant()
   properties: {

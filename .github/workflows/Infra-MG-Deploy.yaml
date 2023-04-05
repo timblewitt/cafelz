@@ -26,8 +26,8 @@ on:
           description: 'Consolidate Identity / Connectivity / Management into single Platform MG'
           default: 'No'
           options:
-            - "Yes"
             - "No"
+            - "Yes"
 
 jobs:
   deploy-mg:
