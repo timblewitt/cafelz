@@ -28,7 +28,6 @@ jobs:
           inlineScript: |     
             $regionName = "uksouth"    
             $templateSourceFile = './src/infra/mg/mg.bicep'
-            #$tenantRootMgId = "cef99625-c8ab-4a7b-baa2-3dd4811009be"
             $tenantRootMgId = (get-azmanagementgroup | where {$_.DisplayName -eq 'Tenant Root Group'}).name
             
             Write-Output "Deploying Azure resources"
