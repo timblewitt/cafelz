@@ -36,6 +36,7 @@ jobs:
                 )  
                 $orgId = "tim"    
                 $mgmtSubName = "mp001"
+                $regionId = "uks"
                 $faName = "fa-$orgId-$mgmtSubName-$regionId-ipam"
                 $faRg = "rg-$orgId-$mgmtSubName-$regionId-ipam"    
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
