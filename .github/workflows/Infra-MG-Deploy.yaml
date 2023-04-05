@@ -32,5 +32,5 @@ jobs:
             Write-Output "Deploying Azure resources"
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
-            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId "timb" -Location $regionName -Verbose -TemplateFile $templateSourceFile
+            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId "cef99625-c8ab-4a7b-baa2-3dd4811009be" -Location $regionName -Verbose -TemplateFile $templateSourceFile
           azPSVersion: latest 

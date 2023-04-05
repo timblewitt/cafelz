@@ -1,6 +1,7 @@
 targetScope = 'managementGroup'
 
 param canary bool = false
+param singleplatform bool = false
 
 resource mgliveorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
   name: 'LiveOrgRoot'
@@ -23,7 +24,7 @@ resource mgplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
   name: 'Identity'
   scope: tenant()
   properties: {
@@ -36,7 +37,7 @@ resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
   name: 'Management'
   scope: tenant()
   properties: {
@@ -49,7 +50,7 @@ resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = {
+resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
   name: 'Connectivity'
   scope: tenant()
   properties: {
