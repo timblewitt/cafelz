@@ -1,7 +1,7 @@
 targetScope = 'managementGroup'
 
 param orgRootMg string = 'OrgRoot'
-param singleplatform bool = false
+param singlePlatformMg string = 'No'
 
 resource mgliveorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
   name: orgRootMg
@@ -24,7 +24,7 @@ resource mgplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
+resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == false) {
   name: 'Identity'
   scope: tenant()
   properties: {
@@ -37,7 +37,7 @@ resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (sin
   }
 }
 
-resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
+resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == false) {
   name: 'Management'
   scope: tenant()
   properties: {
@@ -50,7 +50,7 @@ resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (s
   }
 }
 
-resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
+resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == false) {
   name: 'Connectivity'
   scope: tenant()
   properties: {
