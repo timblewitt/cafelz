@@ -23,7 +23,7 @@ on:
             - "ukwest"
         singlePlatformMg:
           type: choice
-          description: 'Consolidate Identity/Connectivity/Management into single Platform MG'
+          description: 'Consolidate Identity / Connectivity / Management into single Platform MG'
           default: 'No'
           options:
             - "Yes"
