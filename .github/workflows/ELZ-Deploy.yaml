@@ -9,7 +9,7 @@ on:
       inputs:
         orgid:
           type: string
-          description: 'Organisation identifier'
+          description: 'Organisation identifier (3-4 characters)'
           required: true
           default: 'tim'
         regionname:
@@ -204,7 +204,7 @@ jobs:
             #
             # Set the subscription name and run commands in the context of that subscription
             # 
-            $subName = sub-$orgId-$elzSubName
+            $subName = "sub-$orgId-$elzSubName"
             $subName = 'Azure Landing Zone'  # Temporary for testing 
             $subId = (Set-AzContext -SubscriptionName $subName).Subscription.Id
             $subScope = '/subscriptions/' + $subId
