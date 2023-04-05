@@ -1,7 +1,6 @@
 #
 # This workflow deploys the IP Address Management (IPAM) Azure Function.
 #
-# 
 # The function can be called using the REST API and it returns a free (unallocated) network address for the given environment and location.
 #
 
@@ -28,17 +27,18 @@ jobs:
       - name: Create Function App
         uses: azure/powershell@v1
         with:
-          inlineScript: |         
-            $mgmtSubName = "mp0004"
+          inlineScript: |     
+            $orgId = "tim"    
+            $mgmtSubName = "mp001"
             $regionName = "uksouth"
             $regionId = "uks"
             $functionSourceFolder = './src/infra/ipam/function/*'
             $functionZipPath = './src/infra/ipam/ipam.zip'
             $templateSourceFile = './src/infra/ipam/templates/ipam.bicep'
 
-            $faName = "fa-$mgmtSubName-$regionId-ipam"
-            $rgIpamName = "rg-$mgmtSubName-$regionId-ipam"
-            $rgMonitorName = "rg-$mgmtSubName-$regionId-monitor"
+            $faName = "fa-$orgId-$mgmtSubName-$regionId-ipam"
+            $rgIpamName = "rg-$orgId-$mgmtSubName-$regionId-ipam"
+            $rgMonitorName = "rg-$orgId-$mgmtSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"
             Compress-Archive -Path $functionSourceFolder -DestinationPath $functionZipPath -Force

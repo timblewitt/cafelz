@@ -26,11 +26,6 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |      
-            #
-            #### This script calls the LZIM Azure Function App (Add-LzId function) using the REST API to add a range of
-            #### Azure Landing Zone identifiers for a given environment (e.g. production/test/dev/staging/QA).
-            #### These ids can then be requested individually using the Get-LzId function for new Azure Landing Zones.
-            #
             function Add-Ipam-Records {
                 param (
                     $nwRange,
@@ -38,9 +33,11 @@ jobs:
                     $nwSize,
                     $nwEnvironment,
                     $nwRegion
-                )
-                $faName = 'fa-mp0004-uks-ipam'
-                $faRg = 'rg-mp0004-uks-ipam'     
+                )  
+                $orgId = "tim"    
+                $mgmtSubName = "mp001"
+                $faName = "fa-$orgId-$mgmtSubName-$regionId-ipam"
+                $faRg = "rg-$orgId-$mgmtSubName-$regionId-ipam"    
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Add-IPAM-Range'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
