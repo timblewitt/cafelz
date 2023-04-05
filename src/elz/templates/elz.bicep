@@ -75,15 +75,15 @@ module log './modules/log.bicep' = {
   }
 }
 
-//module kv './modules/kv.bicep' = {
-//  name: 'kvDeployment'
-//  scope: rgSecurity
-//  params: {
-//    kvName: 'kv-${orgId}-${elzSubName}-${elzRegionId}-01'
-//    logId: log.outputs.logId
-//    location: elzRegionName
-//  }
-//}
+module kv './modules/kv.bicep' = {
+  name: 'kvDeployment'
+  scope: rgSecurity
+  params: {
+    kvName: 'kv-${orgId}-${elzSubName}-${elzRegionId}-01'
+    logId: log.outputs.logId
+    location: elzRegionName
+  }
+}
 
 module aa './modules/aa.bicep' = {
   name: 'aaDeployment'
