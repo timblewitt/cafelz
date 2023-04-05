@@ -99,18 +99,20 @@ jobs:
             $elzDeployRbac = '${{ github.event.inputs.deployrbac }}' 
             $elzDeployPolicies = '${{ github.event.inputs.deploypolicies }}' 
 
+            $orgId = 'tim'
+
             # 
             # Generate LZIM resource names 
             #
-            $lzimSubName = 'mp0004'   # Name/id of management subscription
+            $lzimSubName = 'mp001'   # Name/id of management subscription
             $lzimRegionId = 'uks'     # Region identifier used in naming management resources
-            $faLzimName = "fa-$lzimSubName-$lzimRegionId-lzim"
-            $faLzimRg = "rg-$lzimSubName-$lzimRegionId-lzim"
+            $faLzimName = "fa-$orgId-$lzimSubName-$lzimRegionId-lzim"
+            $faLzimRg = "rg-$orgId-$lzimSubName-$lzimRegionId-lzim"
 
             # 
             # Generate IPAM resource names 
             #
-            $ipamSubName = 'mp0004'   # Name/id of management subscription hosting IPAM
+            $ipamSubName = 'mp001'   # Name/id of management subscription hosting IPAM
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
             $faIpamName = "fa-$ipamSubName-$ipamRegionId-ipam"
             $faIpamRg = "rg-$ipamSubName-$ipamRegionId-ipam"
@@ -197,9 +199,8 @@ jobs:
             #
             # Set the subscription name and run commands in the context of that subscription
             # 
-            $subName = $elzSubName
+            $subName = sub-$orgId-$elzSubName
             $subName = 'Azure Landing Zone'  # Temporary for testing 
-            #$subName = 'CBPVisual Studio Enterprise'  # Temporary for testing 
             $subId = (Set-AzContext -SubscriptionName $subName).Subscription.Id
             $subScope = '/subscriptions/' + $subId
 
@@ -210,11 +211,11 @@ jobs:
               #
               # Generate resource names based on subscription and region identifiers
               #
-              $elzMonitorRg = "rg-$elzSubName-$elzRegionId-monitor"
-              $elzBackupRg = "rg-$elzSubName-$elzRegionId-backup"
-              $elzSecurityRg = "rg-$elzSubName-$elzRegionId-security"
-              $elzNetworkRg = "rg-$elzSubName-$elzRegionId-network"
-              $elzVnetName = "vnet-$elzSubName-$elzRegionId-01"
+              $elzMonitorRg = "rg-$orgId-$elzSubName-$elzRegionId-monitor"
+              $elzBackupRg = "rg-$orgId-$elzSubName-$elzRegionId-backup"
+              $elzSecurityRg = "rg-$orgId-$elzSubName-$elzRegionId-security"
+              $elzNetworkRg = "rg-$orgId-$elzSubName-$elzRegionId-network"
+              $elzVnetName = "vnet-$orgId-$elzSubName-$elzRegionId-01"
               
               # 
               # Check if VNet already exists.  If not, create new VNet with either an address range from IPAM or manual parameter
@@ -299,6 +300,7 @@ jobs:
               Write-Host "Deploying landing zone resources"
               $deploymentName = Get-Date -Format yyyyMMddHHmmss
               New-AzDeployment -Name $deploymentName -Location $elzRegionName -Verbose -TemplateFile ./src/elz/templates/elz.bicep `
+                -orgId $orgId `
                 -elzSubName $elzSubName `
                 -elzRegionId $elzRegionId `
                 -elzRegionName $elzRegionName `
