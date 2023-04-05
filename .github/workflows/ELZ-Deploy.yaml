@@ -95,6 +95,7 @@ jobs:
             #
             # Get supplied parameters
             #
+            $orgId = '${{ github.event.inputs.orgid }}'
             $elzRegionName = '${{ github.event.inputs.regionname }}'
             $elzEnvName = '${{ github.event.inputs.envname }}'
             $elzVnetSize  = '${{ github.event.inputs.networksize }}' 
