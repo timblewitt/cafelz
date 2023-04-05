@@ -7,6 +7,11 @@ on:
     branches: [ none ]
   workflow_dispatch:
       inputs:
+        orgid:
+          type: string
+          description: 'Organisation identifier'
+          required: true
+          default: 'tim'
         regionname:
           type: choice
           description: 'Azure region for deployment of resources'
