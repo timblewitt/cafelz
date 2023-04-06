@@ -105,9 +105,7 @@ jobs:
                     $Notes
                 )                
                 $faName = $faLzimName
-                $faRg = $faLzimRg     
-                Write-Host "TIMB1:"
-                Write-Host $faName
+                $faRg = $faLzimRg    
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Get-LZIM-Id'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
