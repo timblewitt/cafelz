@@ -79,7 +79,7 @@ jobs:
             $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
             
             $elzDeployRbac = 'No' 
-            
+
             # 
             # Generate LZIM resource names 
             #
@@ -106,6 +106,8 @@ jobs:
                 )                
                 $faName = $faLzimName
                 $faRg = $faLzimRg     
+                Write-Host "TIMB1:"
+                Write-Host $faName
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Get-LZIM-Id'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
