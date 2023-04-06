@@ -11,7 +11,7 @@ on:
           type: string
           description: 'Organisation identifier (3-4 characters)'
           required: true
-          default: 'tim'
+          default: 'abc'
         regionname:
           type: choice
           description: 'Azure region for deployment of resources'
