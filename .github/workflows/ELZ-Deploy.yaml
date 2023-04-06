@@ -11,7 +11,7 @@ on:
           type: string
           description: 'Organisation identifier (3-4 characters)'
           required: true
-          default: 'tim'
+          default: 'abc'
         regionname:
           type: choice
           description: 'Azure region for deployment of resources'
@@ -79,7 +79,7 @@ jobs:
             $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
             
             $elzDeployRbac = 'No' 
-            
+
             # 
             # Generate LZIM resource names 
             #
@@ -105,7 +105,7 @@ jobs:
                     $Notes
                 )                
                 $faName = $faLzimName
-                $faRg = $faLzimRg     
+                $faRg = $faLzimRg    
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Get-LZIM-Id'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
