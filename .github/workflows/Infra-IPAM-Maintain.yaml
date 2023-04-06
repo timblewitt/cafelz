@@ -35,10 +35,10 @@ jobs:
                     $nwRegion
                 )  
                 $orgId = "tim"    
-                $mgmtSubName = "mp001"
+                $ipamSubName = "netwk"
                 $regionId = "uks"
-                $faName = "fa-$orgId-$mgmtSubName-$regionId-ipam"
-                $faRg = "rg-$orgId-$mgmtSubName-$regionId-ipam"    
+                $faName = "fa-$orgId-$ipamSubName-$regionId-ipam"
+                $faRg = "rg-$orgId-$ipamSubName-$regionId-ipam"    
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Add-IPAM-Range'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default

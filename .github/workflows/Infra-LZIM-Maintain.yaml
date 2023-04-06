@@ -24,7 +24,7 @@ jobs:
           
       - name: Maintain Function App
         uses: azure/powershell@v1
-        with:
+        with: 
           inlineScript: |      
             # This script calls the LZIM Azure Function App (Add-LzId function) using the REST API to add a range of
             # Azure Landing Zone identifiers for a given environment (e.g. production/test/dev/staging/QA).
@@ -36,10 +36,10 @@ jobs:
                     $Number
                 )
                 $orgId = "tim"    
-                $mgmtSubName = "mp001"
+                $lzimSubName = "mgmnt"
                 $regionId = "uks"
-                $faName = "fa-$orgId-$mgmtSubName-$regionId-lzim"
-                $faRg = "rg-$orgId-$mgmtSubName-$regionId-lzim"
+                $faName = "fa-$orgId-$lzimSubName-$regionId-lzim"
+                $faRg = "rg-$orgId-$lzimSubName-$regionId-lzim"
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Add-LZIM-Id'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
