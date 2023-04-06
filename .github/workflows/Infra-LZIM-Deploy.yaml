@@ -21,7 +21,26 @@ on:
   push:
     branches: [ none ]
   workflow_dispatch:
-
+      inputs:
+        orgid:
+          type: string
+          description: 'Organisation identifier (3-4 characters)'
+          required: true
+          default: 'abc'
+        regionname:
+          type: choice
+          description: 'Azure region for deployment of resources'
+          required: true
+          default: 'uksouth'
+          options:
+            - "uksouth"
+            - "ukwest"
+        subname:
+          type: string
+          description: 'Subscription identifier (for resource naming)'
+          required: true
+          default: 'mgmnt'
+            
 jobs:
   build-and-deploy-azurefunction:
     runs-on: windows-latest
@@ -38,18 +57,26 @@ jobs:
       - name: Create Function App
         uses: azure/powershell@v1
         with:
-          inlineScript: |         
-            $orgId = "tim"    
-            $mgmtSubName = "mp001"
-            $regionName = "uksouth"
-            $regionId = "uks"
+          inlineScript: |     
+            #
+            # Get supplied parameters
+            #
+            $orgId = '${{ github.event.inputs.orgid }}'
+            $lzimSubName = '${{ github.event.inputs.subname }}'
+            $regionName = '${{ github.event.inputs.regionname }}'
+            if ($regionName -eq 'ukwest') {
+              $regionId = 'ukw'
+            }
+            Else {
+              $regionId = 'uks'
+            }        
             $functionSourceFolder = './src/infra/lzim/function/*'
             $functionZipPath = './src/infra/lzim/lzim.zip'
             $templateSourceFile = './src/infra/lzim/templates/lzim.bicep'
 
-            $faName = "fa-$orgId-$mgmtSubName-$regionId-lzim"
-            $rgLzimName = "rg-$orgId-$mgmtSubName-$regionId-lzim"
-            $rgMonitorName = "rg-$orgId-$mgmtSubName-$regionId-monitor"
+            $faName = "fa-$orgId-$lzimSubName-$regionId-lzim"
+            $rgLzimName = "rg-$orgId-$lzimSubName-$regionId-lzim"
+            $rgMonitorName = "rg-$orgId-$lzimSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"
             Compress-Archive -Path $functionSourceFolder -DestinationPath $functionZipPath -Force
@@ -58,7 +85,7 @@ jobs:
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
             New-AzDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile `
-                -orgId $orgId -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgLzimName $rgLzimName -rgMonitorName $rgMonitorName
+                -orgId $orgId -regionName $regionName -regionId $regionId -lzimSubName $lzimSubName -rgLzimName $rgLzimName -rgMonitorName $rgMonitorName
             Start-Sleep 60
             
             Write-Output "Publishing function to function app"

@@ -8,6 +8,26 @@ on:
   push:
     branches: [ none ]
   workflow_dispatch:
+      inputs:
+        orgid:
+          type: string
+          description: 'Organisation identifier (3-4 characters)'
+          required: true
+          default: 'abc'
+        regionname:
+          type: choice
+          description: 'Azure region for deployment of resources'
+          required: true
+          default: 'uksouth'
+          options:
+            - "uksouth"
+            - "ukwest"
+        subname:
+          type: string
+          description: 'Subscription identifier (for resource naming)'
+          required: true
+          default: 'mgmnt'
+
 
 jobs:
   maintain-azurefunction:
@@ -24,22 +44,32 @@ jobs:
           
       - name: Maintain Function App
         uses: azure/powershell@v1
-        with:
+        with: 
           inlineScript: |      
             # This script calls the LZIM Azure Function App (Add-LzId function) using the REST API to add a range of
             # Azure Landing Zone identifiers for a given environment (e.g. production/test/dev/staging/QA).
             # These ids can then be requested individually using the Get-LzId function for new Azure Landing Zones.
             #
+            
+            #
+            # Get supplied parameters
+            #
+            $orgId = '${{ github.event.inputs.orgid }}'
+            $lzimSubName = '${{ github.event.inputs.subname }}'
+            $regionName = '${{ github.event.inputs.regionname }}'
+            if ($regionName -eq 'ukwest') {
+              $regionId = 'ukw'
+            }
+            Else {
+              $regionId = 'uks'
+            }   
             function Add-Lzim-Records {
                 param (
                     $Environment,
                     $Number
                 )
-                $orgId = "tim"    
-                $mgmtSubName = "mp001"
-                $regionId = "uks"
-                $faName = "fa-$orgId-$mgmtSubName-$regionId-lzim"
-                $faRg = "rg-$orgId-$mgmtSubName-$regionId-lzim"
+                $faName = "fa-$orgId-$lzimSubName-$regionId-lzim"
+                $faRg = "rg-$orgId-$lzimSubName-$regionId-lzim"
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Add-LZIM-Id'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default

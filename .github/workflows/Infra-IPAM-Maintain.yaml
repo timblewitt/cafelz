@@ -8,6 +8,25 @@ on:
   push:
     branches: [ none ]
   workflow_dispatch:
+      inputs:
+        orgid:
+          type: string
+          description: 'Organisation identifier (3-4 characters)'
+          required: true
+          default: 'abc'
+        regionname:
+          type: choice
+          description: 'Azure region for deployment of resources'
+          required: true
+          default: 'uksouth'
+          options:
+            - "uksouth"
+            - "ukwest"
+        subname:
+          type: string
+          description: 'Subscription identifier (for resource naming)'
+          required: true
+          default: 'netwk'
 
 jobs:
   maintain-azurefunction:
@@ -25,7 +44,19 @@ jobs:
       - name: Update Function App
         uses: azure/powershell@v1
         with:
-          inlineScript: |      
+          inlineScript: |   
+            #
+            # Get supplied parameters
+            #
+            $orgId = '${{ github.event.inputs.orgid }}'
+            $ipamSubName = '${{ github.event.inputs.subname }}'
+            $regionName = '${{ github.event.inputs.regionname }}'
+            if ($regionName -eq 'ukwest') {
+              $regionId = 'ukw'
+            }
+            Else {
+              $regionId = 'uks'
+            }   
             function Add-Ipam-Records {
                 param (
                     $nwRange,
@@ -34,11 +65,8 @@ jobs:
                     $nwEnvironment,
                     $nwRegion
                 )  
-                $orgId = "tim"    
-                $mgmtSubName = "mp001"
-                $regionId = "uks"
-                $faName = "fa-$orgId-$mgmtSubName-$regionId-ipam"
-                $faRg = "rg-$orgId-$mgmtSubName-$regionId-ipam"    
+                $faName = "fa-$orgId-$ipamSubName-$regionId-ipam"
+                $faRg = "rg-$orgId-$ipamSubName-$regionId-ipam"    
                 $faId = (Get-AzWebApp -Name $faName -ResourceGroupName $faRg).Id 
                 $faFunction = 'Add-IPAM-Range'
                 $faFunctionKey = (Invoke-AzResourceAction -ResourceId "$faId/functions/$faFunction" -Action listkeys -Force).default
