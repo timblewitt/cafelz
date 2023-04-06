@@ -8,6 +8,26 @@ on:
   push:
     branches: [ none ]
   workflow_dispatch:
+      inputs:
+        orgRootMg:
+          type: string
+          description: 'Organisation root management group'
+          required: true
+          default: 'OrgRoot'
+        mgRegion:
+          type: choice
+          description: 'Management group region'
+          default: 'uksouth'
+          options:
+            - "uksouth"
+            - "ukwest"
+        singlePlatformMg:
+          type: choice
+          description: 'Consolidate Identity / Connectivity / Management into single Platform MG'
+          default: 'No'
+          options:
+            - "No"
+            - "Yes"
 
 jobs:
   deploy-mg:
@@ -25,13 +45,20 @@ jobs:
       - name: Deploy Management Groups
         uses: azure/powershell@v1
         with:
-          inlineScript: |     
-            $regionName = "uksouth"    
+          inlineScript: |   
+            #
+            # Get supplied parameters
+            #
+            $orgRootMg = '${{ github.event.inputs.orgRootMg }}'
+            $singlePlatformMg = '${{ github.event.inputs.singlePlatformMg }}'
+            $regionName = '${{ github.event.inputs.mgRegion }}'
             $templateSourceFile = './src/infra/mg/mg.bicep'
             $tenantRootMgId = (get-azmanagementgroup | where {$_.DisplayName -eq 'Tenant Root Group'}).name
             
             Write-Output "Deploying Azure resources"
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
-            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId $tenantRootMgId -Location $regionName -Verbose -TemplateFile $templateSourceFile
+            New-AzManagementGroupDeployment -Name $deploymentName -ManagementGroupId $tenantRootMgId -Location $regionName -Verbose -TemplateFile $templateSourceFile  `
+                -orgRootMg $orgRootMg  `
+                -singlePlatformMg $singlePlatformMg
           azPSVersion: latest 

@@ -1,13 +1,13 @@
 targetScope = 'managementGroup'
 
-param canary bool = false
-param singleplatform bool = false
+param orgRootMg string = 'OrgRoot'
+param singlePlatformMg string = 'No'
 
 resource mgliveorgroot 'Microsoft.Management/managementGroups@2021-04-01' = {
-  name: 'LiveOrgRoot'
+  name: orgRootMg
   scope: tenant()
   properties: {
-    displayName: 'LiveOrgRoot'
+    displayName: orgRootMg
   }
 }
 
@@ -24,7 +24,7 @@ resource mgplatform 'Microsoft.Management/managementGroups@2021-04-01' = {
   }
 }
 
-resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
+resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == 'No') {
   name: 'Identity'
   scope: tenant()
   properties: {
@@ -37,7 +37,7 @@ resource mgidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (sin
   }
 }
 
-resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
+resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == 'No') {
   name: 'Management'
   scope: tenant()
   properties: {
@@ -50,7 +50,7 @@ resource mgmanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (s
   }
 }
 
-resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singleplatform == false) {
+resource mgconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (singlePlatformMg == 'No') {
   name: 'Connectivity'
   scope: tenant()
   properties: {
@@ -101,90 +101,3 @@ resource mgdecommission 'Microsoft.Management/managementGroups@2021-04-01' = {
     displayName: 'Decommission'
   }
 }
-
-resource mgcanaryorgroot 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryOrgRoot'
-  scope: tenant()
-  properties: {
-    displayName: 'CanaryOrgRoot'
-  }
-}
-
-resource mgcanaryplatform 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryPlatform'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryorgroot.id
-      }
-    }
-    displayName: 'CanaryPlatform'
-  }
-}
-
-resource mgcanaryidentity 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryIdentity'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryplatform.id
-      }
-    }
-    displayName: 'CanaryIdentity'
-  }
-}
-
-resource mgcanarymanagement 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryManagement'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryplatform.id
-      }
-    }
-    displayName: 'CanaryManagement'
-  }
-}
-
-resource mgcanaryconnectivity 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryConnectivity'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryplatform.id
-      }
-    }
-    displayName: 'CanaryConnectivity'
-  }
-}
-
-resource mgcanarylandingzones 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanaryLandingZones'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryorgroot.id
-      }
-    }
-    displayName: 'CanaryLandingZones'
-  }
-}
-
-resource mgcanarysandbox 'Microsoft.Management/managementGroups@2021-04-01' = if (canary == true) {
-  name: 'CanarySandbox'
-  scope: tenant()
-  properties: {
-    details: {
-      parent: {
-        id: mgcanaryorgroot.id
-      }
-    }
-    displayName: 'CanarySandbox'
-  }
-}
-
