@@ -79,8 +79,7 @@ jobs:
             $elzVnetAddressRange = '${{ github.event.inputs.addressrange }}' 
             
             $elzDeployRbac = 'No' 
-            $orgId = 'tim'
-
+            
             # 
             # Generate LZIM resource names 
             #
