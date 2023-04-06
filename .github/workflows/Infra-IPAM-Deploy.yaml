@@ -29,16 +29,16 @@ jobs:
         with:
           inlineScript: |     
             $orgId = "tim"    
-            $mgmtSubName = "mp001"
+            $ipamSubName = "netwk"
             $regionName = "uksouth"
             $regionId = "uks"
             $functionSourceFolder = './src/infra/ipam/function/*'
             $functionZipPath = './src/infra/ipam/ipam.zip'
             $templateSourceFile = './src/infra/ipam/templates/ipam.bicep'
 
-            $faName = "fa-$orgId-$mgmtSubName-$regionId-ipam"
-            $rgIpamName = "rg-$orgId-$mgmtSubName-$regionId-ipam"
-            $rgMonitorName = "rg-$orgId-$mgmtSubName-$regionId-monitor"
+            $faName = "fa-$orgId-$ipamSubName-$regionId-ipam"
+            $rgIpamName = "rg-$orgId-$ipamSubName-$regionId-ipam"
+            $rgMonitorName = "rg-$orgId-$ipamSubName-$regionId-monitor"
 
             Write-Output "Generating function zip file"
             Compress-Archive -Path $functionSourceFolder -DestinationPath $functionZipPath -Force
@@ -47,7 +47,7 @@ jobs:
             $deploymentName = Get-Date -Format yyyyMMddHHmmss
             $deploymentName
             New-AzDeployment -Name $deploymentName -Location $regionName -Verbose -TemplateFile $templateSourceFile `
-                -orgId $orgId -regionName $regionName -regionId $regionId -mgmtSubName $mgmtSubName -rgIpamName $rgIpamName -rgMonitorName $rgMonitorName
+                -orgId $orgId -regionName $regionName -regionId $regionId -ipamSubName $ipamSubName -rgIpamName $rgIpamName -rgMonitorName $rgMonitorName
             Start-Sleep 60
             
             Write-Output "Publishing function to function app"
