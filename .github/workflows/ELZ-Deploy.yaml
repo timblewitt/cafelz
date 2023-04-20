@@ -31,6 +31,11 @@ on:
             - "Staging"
             - "Dev"
             - "Test"
+        elzsubname:
+          type: string
+          description: 'Landing zone subscription name (auto for automatically generated)'
+          required: true
+          default: 'auto'
         addressrange:
           type: string
           description: 'Virtual network address range (auto for IPAM)'
@@ -45,11 +50,6 @@ on:
             - "Small"
             - "Medium"
             - "Large"
-        elzsubname:
-          type: string
-          description: 'Landing zone subscription name (auto for automatically generated)'
-          required: true
-          default: 'auto'
 
 jobs:
   deploy-elz:
