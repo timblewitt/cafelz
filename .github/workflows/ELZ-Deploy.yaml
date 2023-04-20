@@ -31,6 +31,11 @@ on:
             - "Staging"
             - "Dev"
             - "Test"
+        addressrange:
+          type: string
+          description: 'Virtual network address range (auto for IPAM)'
+          required: true
+          default: 'auto'
         networksize:
           type: choice
           description: 'Virtual network (VNet) size - S/M/L (if addressrange = auto)'
@@ -43,11 +48,6 @@ on:
         elzsubname:
           type: string
           description: 'Landing zone subscription name (auto for automatically generated)'
-          required: true
-          default: 'auto'
-        addressrange:
-          type: string
-          description: 'Virtual network address range (auto for IPAM)'
           required: true
           default: 'auto'
 
