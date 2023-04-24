@@ -31,15 +31,6 @@ on:
             - "Staging"
             - "Dev"
             - "Test"
-        networksize:
-          type: choice
-          description: 'Virtual network (VNet) size - S/M/L (if addressrange = auto)'
-          required: true
-          default: 'Small'
-          options:
-            - "Small"
-            - "Medium"
-            - "Large"
         elzsubname:
           type: string
           description: 'Landing zone subscription name (auto for automatically generated)'
@@ -50,6 +41,15 @@ on:
           description: 'Virtual network address range (auto for IPAM)'
           required: true
           default: 'auto'
+        networksize:
+          type: choice
+          description: 'Virtual network (VNet) size - S/M/L (if addressrange = auto)'
+          required: true
+          default: 'Small'
+          options:
+            - "Small"
+            - "Medium"
+            - "Large"
 
 jobs:
   deploy-elz:
