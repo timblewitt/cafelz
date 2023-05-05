@@ -1,3 +1,4 @@
+param orgId string
 param elzSubName string
 param elzRegionId string
 param vnetName string
@@ -6,14 +7,10 @@ param snetWeb string
 param snetApp string
 param snetDb string
 param snetMgt string
-param nsgWebId string
-param nsgAppId string
-param nsgDbId string
-param nsgMgtId string
 param location string 
 
 resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-web'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-web'
   location: location
   properties: {
     securityRules: [
@@ -35,7 +32,7 @@ resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 }
 
 resource nsgApp 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-app'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-app'
   location: location
   properties: {
     securityRules: [
@@ -57,7 +54,7 @@ resource nsgApp 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 }
 
 resource nsgDb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-db'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-db'
   location: location
   properties: {
     securityRules: [
@@ -79,7 +76,7 @@ resource nsgDb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 }
 
 resource nsgMgt 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-mgt'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-mgt'
   location: location
   properties: {
     securityRules: [
@@ -116,7 +113,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetWeb          
           networkSecurityGroup: {
-            id: nsgWebId
+            id: nsgWeb.id
           }
           routeTable: {
             id: rt.id
@@ -129,7 +126,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetApp
           networkSecurityGroup: {
-            id: nsgAppId
+            id: nsgApp.id
           }
           routeTable: {
             id: rt.id
@@ -142,7 +139,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetDb
           networkSecurityGroup: { 
-            id: nsgDbId
+            id: nsgDb.id
           }
           routeTable: {
             id: rt.id
@@ -155,7 +152,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetMgt
           networkSecurityGroup: { 
-            id: nsgMgtId
+            id: nsgMgt.id
           }
           routeTable: {
             id: rt.id
@@ -167,7 +164,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
 }
 
 resource rt 'Microsoft.Network/routeTables@2021-03-01' = {
-  name: 'rt-${elzSubName}-${elzRegionId}-01'
+  name: 'rt-${orgId}-${elzSubName}-${elzRegionId}-01'
   location: location
   properties: {
     routes: [
