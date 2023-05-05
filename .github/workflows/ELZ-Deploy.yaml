@@ -83,7 +83,7 @@ jobs:
             # 
             # Generate LZIM resource names 
             #
-            $lzimSubName = 'mgmnt'   # Name/id of management subscription
+            $lzimSubName = 'mp001'   # Name/id of management subscription
             $lzimRegionId = 'uks'     # Region identifier used in naming management resources
             $faLzimName = "fa-$orgId-$lzimSubName-$lzimRegionId-lzim"
             $faLzimRg = "rg-$orgId-$lzimSubName-$lzimRegionId-lzim"
@@ -91,7 +91,7 @@ jobs:
             # 
             # Generate IPAM resource names 
             #
-            $ipamSubName = 'netwk'   # Name/id of management subscription hosting IPAM
+            $ipamSubName = 'np001'   # Name/id of management subscription hosting IPAM
             $ipamRegionId = 'uks'     # Region identifier used in naming central network resources
             $faIpamName = "fa-$orgId-$ipamSubName-$ipamRegionId-ipam"
             $faIpamRg = "rg-$orgId-$ipamSubName-$ipamRegionId-ipam"

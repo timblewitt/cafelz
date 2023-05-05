@@ -26,7 +26,7 @@ on:
           type: string
           description: 'Subscription identifier (for resource naming)'
           required: true
-          default: 'netwk'
+          default: 'np001'
 
 jobs:
   maintain-azurefunction:
