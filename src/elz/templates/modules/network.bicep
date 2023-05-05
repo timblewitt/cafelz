@@ -7,10 +7,10 @@ param snetWeb string
 param snetApp string
 param snetDb string
 param snetMgt string
-param nsgWebId string
-param nsgAppId string
-param nsgDbId string
-param nsgMgtId string
+//param nsgWebId string
+//param nsgAppId string
+//param nsgDbId string
+//param nsgMgtId string
 param location string 
 
 resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
@@ -117,7 +117,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetWeb          
           networkSecurityGroup: {
-            id: nsgWebId
+            id: nsgWeb.id
           }
           routeTable: {
             id: rt.id
@@ -130,7 +130,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetApp
           networkSecurityGroup: {
-            id: nsgAppId
+            id: nsgApp.id
           }
           routeTable: {
             id: rt.id
@@ -143,7 +143,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetDb
           networkSecurityGroup: { 
-            id: nsgDbId
+            id: nsgDb.id
           }
           routeTable: {
             id: rt.id
@@ -156,7 +156,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
         properties: {
           addressPrefix: snetMgt
           networkSecurityGroup: { 
-            id: nsgMgtId
+            id: nsgMgt.id
           }
           routeTable: {
             id: rt.id

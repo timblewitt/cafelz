@@ -94,20 +94,22 @@ module aa './modules/aa.bicep' = {
   }
 }
 
-module nsg './modules/nsg.bicep' = {
-  name: 'nsgDeployment'
-  scope: rgNetwork
-  params: {
-    elzSubName: elzSubName
-    elzRegionId: elzRegionId
-    location: elzRegionName
-  }
-}
+//module nsg './modules/nsg.bicep' = {
+//  name: 'nsgDeployment'
+//  scope: rgNetwork
+//  params: {
+//    orgId: orgId
+//    elzSubName: elzSubName
+//    elzRegionId: elzRegionId
+//    location: elzRegionName
+//  }
+//}
 
 module vnet './modules/network.bicep' = {
   name: 'vnetDeployment'
   scope: rgNetwork
   params: {
+    orgId: orgId
     elzSubName: elzSubName
     elzRegionId: elzRegionId
     vnetName: elzVnetName
@@ -116,10 +118,10 @@ module vnet './modules/network.bicep' = {
     snetApp: snetApp
     snetDb: snetDb
     snetMgt: snetMgt
-    nsgWebId: nsg.outputs.nsgWebId
-    nsgAppId: nsg.outputs.nsgAppId
-    nsgDbId: nsg.outputs.nsgDbId
-    nsgMgtId: nsg.outputs.nsgMgtId
+//    nsgWebId: nsg.outputs.nsgWebId
+//    nsgAppId: nsg.outputs.nsgAppId
+//    nsgDbId: nsg.outputs.nsgDbId
+//    nsgMgtId: nsg.outputs.nsgMgtId
     location: elzRegionName
   } 
 }
