@@ -1,3 +1,4 @@
+param orgId string
 param elzSubName string
 param elzRegionId string
 param vnetName string
@@ -13,7 +14,7 @@ param nsgMgtId string
 param location string 
 
 resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-web'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-web'
   location: location
   properties: {
     securityRules: [
@@ -35,7 +36,7 @@ resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 }
 
 resource nsgApp 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-app'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-app'
   location: location
   properties: {
     securityRules: [
@@ -57,7 +58,7 @@ resource nsgApp 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 }
 
 resource nsgDb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-db'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-db'
   location: location
   properties: {
     securityRules: [
@@ -79,7 +80,7 @@ resource nsgDb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 }
 
 resource nsgMgt 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: 'nsg-${elzSubName}-${elzRegionId}-mgt'
+  name: 'nsg-${orgId}-${elzSubName}-${elzRegionId}-mgt'
   location: location
   properties: {
     securityRules: [
@@ -167,7 +168,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
 }
 
 resource rt 'Microsoft.Network/routeTables@2021-03-01' = {
-  name: 'rt-${elzSubName}-${elzRegionId}-01'
+  name: 'rt-${orgId}-${elzSubName}-${elzRegionId}-01'
   location: location
   properties: {
     routes: [
