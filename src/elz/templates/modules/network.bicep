@@ -7,10 +7,6 @@ param snetWeb string
 param snetApp string
 param snetDb string
 param snetMgt string
-//param nsgWebId string
-//param nsgAppId string
-//param nsgDbId string
-//param nsgMgtId string
 param location string 
 
 resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
